@@ -1422,7 +1422,7 @@ function createEvidenceDrawerHtml(chunks) {
       return `
       <div class="evidence-chunk-item">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-          <strong class="text-cyan">Segment ${i + 1} (${c.timestamp_str})</strong>
+          <strong style="color: #ffffff; font-size: 0.85rem;">Segment ${i + 1} (${c.timestamp_str})</strong>
           <button class="ts-pill clickable-ts" data-time="${c.start_seconds}" style="padding: 1px 6px; font-size: 0.72rem;">
             Jump ▶
           </button>
@@ -1435,7 +1435,7 @@ function createEvidenceDrawerHtml(chunks) {
   return `
     <div class="evidence-drawer">
       <button class="evidence-header-btn">
-        <span><i data-lucide="layers" class="icon-xs text-indigo"></i> Retrieved Evidence Chunks (${chunks.length} Chunks)</span>
+        <span><i data-lucide="layers" class="icon-xs" style="color: var(--yt-red); vertical-align: middle; margin-right: 4px;"></i>Retrieved Evidence Chunks (${chunks.length} Chunks)</span>
         <i data-lucide="chevron-down" class="icon-xs"></i>
       </button>
       <div class="evidence-content-body">
@@ -1481,10 +1481,26 @@ function updateEvaluationMetrics(metrics, latencyMs) {
   barPrecision.style.width = `${pVal}%`;
   barRecall.style.width = `${rcVal}%`;
 
-  badgeFaithfulness.textContent = fVal >= 80 ? "Optimal" : fVal >= 50 ? "Good" : "Fair";
-  badgeRelevancy.textContent = rVal >= 80 ? "Optimal" : rVal >= 50 ? "Good" : "Fair";
-  badgePrecision.textContent = pVal >= 80 ? "Optimal" : pVal >= 50 ? "Good" : "Fair";
-  badgeRecall.textContent = rcVal >= 80 ? "Optimal" : rcVal >= 50 ? "Good" : "Fair";
+  const updateMetricItem = (badgeEl, barEl, val) => {
+    if (val >= 80) {
+      badgeEl.textContent = "Optimal";
+      badgeEl.classList.add("optimal");
+      barEl.classList.add("optimal");
+    } else if (val >= 50) {
+      badgeEl.textContent = "Good";
+      badgeEl.classList.remove("optimal");
+      barEl.classList.remove("optimal");
+    } else {
+      badgeEl.textContent = "Fair";
+      badgeEl.classList.remove("optimal");
+      barEl.classList.remove("optimal");
+    }
+  };
+
+  updateMetricItem(badgeFaithfulness, barFaithfulness, fVal);
+  updateMetricItem(badgeRelevancy, barRelevancy, rVal);
+  updateMetricItem(badgePrecision, barPrecision, pVal);
+  updateMetricItem(badgeRecall, barRecall, rcVal);
 }
 
 function renderSuggestedChips(questions) {
