@@ -1884,6 +1884,7 @@ function showToast(message, type = "info", duration = null) {
   let icon = "info";
   if (type === "success") icon = "check-circle";
   if (type === "error") icon = "alert-triangle";
+  if (type === "toggle-active" || type === "toggle-inactive") icon = "globe";
 
   toast.innerHTML = `<i data-lucide="${icon}" class="icon-xs"></i> <span>${escapeHtml(message)}</span>`;
   toastContainer.appendChild(toast);
@@ -1940,7 +1941,11 @@ if (btnWebSearchToggle) {
         ? "Web Search Mode is ON (will search DuckDuckGo if requested)"
         : "Web Search Mode is OFF (click to enable)"
     );
-    showToast(`Web Search mode: ${isWebSearchEnabled ? "ON" : "OFF"}`);
+    showToast(
+      `Web Search mode: ${isWebSearchEnabled ? "ON" : "OFF"}`,
+      isWebSearchEnabled ? "toggle-active" : "toggle-inactive",
+      1100
+    );
   });
 }
 

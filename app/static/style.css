@@ -1726,9 +1726,9 @@ body.resizing-horizontal input {
 }
 
 .btn-web-toggle.active {
-  background: rgba(6, 182, 212, 0.15);
-  border-color: rgba(6, 182, 212, 0.4);
-  color: #22d3ee;
+  background: rgba(255, 77, 109, 0.14);
+  border-color: rgba(255, 77, 109, 0.45);
+  color: #ff6b87;
 }
 
 .toggle-switch-track {
@@ -1752,11 +1752,13 @@ body.resizing-horizontal input {
 }
 
 .btn-web-toggle.active .toggle-switch-track {
-  background: #06b6d4;
+  background: #ff4d6d;
 }
 
 .btn-web-toggle.active .toggle-switch-thumb {
   transform: translateX(10px);
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 77, 109, 0.7);
 }
 
 .btn-send-glow {
@@ -2215,6 +2217,20 @@ body.resizing-horizontal input {
 .toast-item.success { border-color: rgba(16, 185, 129, 0.4); }
 .toast-item.info { border-color: rgba(6, 182, 212, 0.4); }
 .toast-item.error { border-color: rgba(244, 63, 94, 0.4); }
+.toast-item.toggle-active {
+  border-color: rgba(255, 77, 109, 0.48);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 14px rgba(255, 77, 109, 0.18);
+}
+.toast-item.toggle-active svg.lucide {
+  color: #ff6b87;
+}
+.toast-item.toggle-inactive {
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #c4c7c5;
+}
+.toast-item.toggle-inactive svg.lucide {
+  color: #8e918f;
+}
 
 @keyframes toastSlideUp {
   from { opacity: 0; transform: translateY(16px); }
