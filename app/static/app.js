@@ -1951,6 +1951,9 @@ chatInput.addEventListener("input", function () {
 if (btnWebSearchToggle) {
   btnWebSearchToggle.addEventListener("click", () => {
     isWebSearchEnabled = !isWebSearchEnabled;
+    try {
+      localStorage.setItem("yt_copilot_web_search_enabled", isWebSearchEnabled ? "true" : "false");
+    } catch (e) {}
     btnWebSearchToggle.classList.toggle("active", isWebSearchEnabled);
     btnWebSearchToggle.setAttribute(
       "title",
@@ -2224,6 +2227,18 @@ function initApp() {
     const savedDrawer = localStorage.getItem("yt_copilot_drawer_open");
     if (savedDrawer === "false") {
       setVideoDrawerState(false);
+    }
+  } catch (e) {}
+
+  // Load saved web search mode preference
+  try {
+    const savedWebSearch = localStorage.getItem("yt_copilot_web_search_enabled");
+    if (savedWebSearch === "true") {
+      isWebSearchEnabled = true;
+      if (btnWebSearchToggle) {
+        btnWebSearchToggle.classList.add("active");
+        btnWebSearchToggle.setAttribute("title", "Web Search Mode is ON (will search DuckDuckGo if requested)");
+      }
     }
   } catch (e) {}
 
