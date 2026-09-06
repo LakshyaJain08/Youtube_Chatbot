@@ -1,0 +1,53 @@
+# YouTube Chatbot Configuration
+
+app:
+  name: "YouTube AI Copilot"
+  version: "2.0.0"
+  host: "127.0.0.1"
+  port: 8000
+  debug: true
+
+model:
+  llm_model: "gemini-2.5-flash"  # Ultra-low latency & cost-effective
+  fallback_llm_model: "gemini-1.5-flash"
+  embedding_model: "models/text-embedding-004"
+  temperature: 0.2
+  max_output_tokens: 1500
+  top_p: 0.95
+
+ingestion:
+  default_languages: ["en", "en-US", "en-GB", "auto"]
+  max_transcript_length_chars: 500000
+  raw_data_dir: "data/raw"
+  processed_data_dir: "data/processed"
+
+transformation:
+  chunk_size: 800
+  chunk_overlap: 150
+  split_by_sentences: true
+
+indexing:
+  vector_store_type: "faiss"
+  models_dir: "models"
+  cache_indexes: true
+
+retrieval:
+  # Staged Hybrid Filtering Parameters
+  enable_metadata_prefilter: true
+  enable_hybrid_search: true
+  hybrid_alpha: 0.65  # Weight for dense vector search (0.65 dense, 0.35 sparse BM25)
+  top_k_candidates: 10
+  top_k_final: 4
+  enable_query_rewrite: true
+  enable_multi_query: false  # Can be toggled for multi-intent questions
+  enable_context_compression: true
+  similarity_threshold: 0.3
+
+evaluation:
+  metrics:
+    - "faithfulness"
+    - "answer_relevancy"
+    - "context_precision"
+    - "context_recall"
+    - "latency_ms"
+  benchmark_output_dir: "outputs"

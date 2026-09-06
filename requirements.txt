@@ -1,0 +1,29 @@
+# Core Framework & LLM
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+
+# LangChain & Google Gemini
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+langchain-text-splitters>=0.3.0
+langchain-google-genai>=2.0.0
+google-genai>=0.1.0
+
+# Retrieval & Vector Search
+faiss-cpu>=1.7.4
+rank-bm25>=0.2.2
+sentence-transformers>=2.2.2
+
+# YouTube Ingestion
+youtube-transcript-api>=1.2.0
+requests>=2.31.0
+
+# Evaluation & Testing
+ragas>=0.1.0
+pytest>=7.4.0
+pytest-asyncio>=0.21.0

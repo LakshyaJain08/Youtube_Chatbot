@@ -1,0 +1,38 @@
+# Data and Entity Schemas
+
+VideoMetadata:
+  video_id: string
+  title: string
+  author: string
+  length_seconds: integer
+  thumbnail_url: string
+  views: integer
+
+TranscriptSegment:
+  text: string
+  start: float
+  duration: float
+
+ProcessedChunk:
+  chunk_id: string
+  video_id: string
+  text: string
+  start_seconds: float
+  end_seconds: float
+  timestamp_str: string
+  word_count: integer
+  char_count: integer
+
+QueryRequest:
+  video_id: string
+  question: string
+  conversation_history: list
+  stream: boolean
+
+QueryResult:
+  answer: string
+  citations: list
+  confidence_score: float
+  retrieved_chunks: list
+  latency_ms: float
+  evaluation_metrics: dict

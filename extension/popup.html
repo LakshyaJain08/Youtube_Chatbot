@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube AI Copilot</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+        <div class="brand-logo-wrap">
+          <div class="logo-box">▶</div>
+          <div class="logo-ai-badge">
+            <svg class="ai-sparkle-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z" fill="#FFFFFF"/>
+              <path d="M19 2C19 3.66 17.66 5 16 5C17.66 5 19 6.34 19 8C19 6.34 20.34 5 22 5C20.34 5 19 3.66 19 2Z" fill="#FFFFFF"/>
+            </svg>
+          </div>
+        </div>
+        <div class="brand-text">
+          <h2>YouTube <span class="accent">AI Copilot</span></h2>
+          <p id="videoStatus">Checking YouTube Tab...</p>
+        </div>
+      <span class="badge" id="apiBadge">Local API</span>
+    </header>
+
+    <!-- Ingest Section -->
+    <section class="video-info-box" id="videoInfoBox">
+      <div class="video-title" id="extVideoTitle">No YouTube video detected</div>
+      <button id="btnExtIngest" class="btn btn-primary" disabled>
+        ⚡ Ingest & Analyze Video
+      </button>
+    </section>
+
+    <!-- Chat Messages -->
+    <div class="chat-container" id="extChatContainer">
+      <div class="message assistant">
+        <p>👋 Open any YouTube video tab and click <strong>Ingest & Analyze</strong> to start chatting with timestamp citations!</p>
+      </div>
+    </div>
+
+    <!-- Quick Chips -->
+    <div class="quick-chips" id="extQuickChips">
+      <button class="chip" data-q="Summarize this video in 3 key takeaways with timestamps.">🎯 Summary</button>
+      <button class="chip" data-q="What are the key technical concepts explained?">🔑 Key Concepts</button>
+      <button class="chip" data-q="Generate a 3-question quiz on this video.">📝 Quiz</button>
+    </div>
+
+    <!-- Input Footer -->
+    <form class="chat-input-bar" id="extChatForm">
+      <input type="text" id="extChatInput" placeholder="Ask a question about this video..." disabled />
+      <button type="submit" id="btnExtSend" class="btn-send" disabled>➤</button>
+    </form>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

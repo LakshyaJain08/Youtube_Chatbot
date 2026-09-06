@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube AI Copilot | Intelligent Video Agent & Staged Hybrid RAG</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="/static/style.css?v=5.7" />
+</head>
+<body class="dark-theme">
+  <div class="agent-app-shell">
+    
+    <!-- Collapsible Agent Sidebar (Google Gemini Design) -->
+    <aside class="agent-sidebar" id="agentSidebar">
+      <!-- Sidebar Header -->
+      <div class="sidebar-top-bar">
+        <div class="sidebar-brand-group">
+          <button id="btnSidebarHamburger" class="btn-sidebar-hamburger" title="Toggle Sidebar">
+            <svg class="hamburger-lines-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4.5" width="18" height="2.5" rx="1.25" fill="#FFFFFF"/>
+              <rect x="3" y="10.75" width="18" height="2.5" rx="1.25" fill="#FFFFFF"/>
+              <rect x="3" y="17" width="18" height="2.5" rx="1.25" fill="#FFFFFF"/>
+            </svg>
+          </button>
+          <div class="brand-logo" title="YouTube AI Copilot">
+            <div class="logo-core">
+              <i data-lucide="play" class="logo-play-icon"></i>
+            </div>
+            <div class="logo-ai-badge">
+              <svg class="ai-sparkle-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z" fill="#FFFFFF"/>
+                <path d="M19 2C19 3.66 17.66 5 16 5C17.66 5 19 6.34 19 8C19 6.34 20.34 5 22 5C20.34 5 19 3.66 19 2Z" fill="#FFFFFF"/>
+              </svg>
+            </div>
+          </div>
+          <span class="sidebar-brand-title">YouTube <span class="sidebar-brand-sub">AI Copilot</span></span>
+        </div>
+      </div>
+
+      <!-- Segmented Mode Switcher (Chat vs Video Hub) -->
+      <div class="sidebar-segmented-switcher">
+        <button class="segmented-tab active" id="segTabChat">
+          <span>Chat</span>
+        </button>
+        <button class="segmented-tab" id="segTabVideoHub">
+          <span>Video Hub</span>
+          <span class="seg-badge-beta">RAG</span>
+        </button>
+      </div>
+
+      <!-- Primary Feature Navigation Items (Gemini Style) -->
+      <div class="sidebar-nav-menu">
+        <button class="sidebar-nav-btn active" id="btnNavHome" title="Overview & Features">
+          <i data-lucide="compass" class="icon-sm"></i>
+          <span>Overview & Features</span>
+        </button>
+        <button class="sidebar-nav-btn" id="btnNewChat" title="New chat (Ctrl+K)">
+          <i data-lucide="square-pen" class="icon-sm"></i>
+          <span>New chat</span>
+        </button>
+        <button class="sidebar-nav-btn" id="btnOpenSearch" title="Search conversation history">
+          <i data-lucide="search" class="icon-sm"></i>
+          <span>Search chats</span>
+        </button>
+        <button class="sidebar-nav-btn" id="btnNavVideos" title="View video & insights">
+          <i data-lucide="video" class="icon-sm"></i>
+          <span>Videos</span>
+        </button>
+        <button class="sidebar-nav-btn" id="btnNavBenchmarks" title="RAG performance benchmarks">
+          <i data-lucide="bar-chart-2" class="icon-sm"></i>
+          <span>Benchmarks</span>
+        </button>
+      </div>
+
+      <!-- Search Input Container (Toggled or inline) -->
+      <div class="sidebar-search-wrap hidden" id="sidebarSearchWrap">
+        <i data-lucide="search" class="icon-xs search-icon"></i>
+        <input type="text" id="sessionSearchInput" placeholder="Filter recent chats..." autocomplete="off" />
+        <button id="btnCloseSearch" class="btn-clear-search" title="Close search">
+          <i data-lucide="x" class="icon-xs"></i>
+        </button>
+      </div>
+
+      <!-- Recent Sessions List -->
+      <div class="sidebar-sessions-scroll" id="sessionsListContainer">
+        <div class="sessions-category-label">Recent</div>
+        <div class="sessions-list" id="sessionsList">
+          <!-- Dynamic session items will be injected here -->
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-actions">
+          <button id="btnClearAllHistory" class="btn-footer-link" title="Clear all chat history">
+            <i data-lucide="trash-2" class="icon-xs"></i> <span>Clear History</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Sidebar Backdrop Overlay (closes sidebar on click outside) -->
+    <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
+
+    <!-- Main Workspace Container -->
+    <div class="agent-main-workspace">
+      
+      <!-- Top Application Navigation Bar -->
+      <header class="agent-topbar">
+        <div class="topbar-left">
+          <button id="btnToggleSidebar" class="btn-icon-subtle" title="Toggle Sidebar (Ctrl+Shift+S)">
+            <svg class="hamburger-lines-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4.5" width="18" height="2.5" rx="1.25" fill="#FFFFFF"/>
+              <rect x="3" y="10.75" width="18" height="2.5" rx="1.25" fill="#FFFFFF"/>
+              <rect x="3" y="17" width="18" height="2.5" rx="1.25" fill="#FFFFFF"/>
+            </svg>
+          </button>
+          <div class="topbar-brand-wrap" id="topbarBrandWrap">
+            <span class="topbar-title" id="activeSessionHeaderTitle">YouTube AI Copilot</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Toggle Video & Insights Drawer Button -->
+          <button id="btnToggleVideoHub" class="btn-topbar-pill" title="Toggle Video & Insights Hub">
+            <i data-lucide="layout-grid" class="icon-xs"></i>
+            <span id="videoHubToggleText">Video & Insights</span>
+            <span class="hub-status-indicator active" id="hubStatusDot"></span>
+          </button>
+
+          <button id="btnExportChat" class="btn-icon-subtle" title="Export conversation as Markdown">
+            <i data-lucide="download" class="icon-xs"></i>
+          </button>
+          <button id="btnClearChat" class="btn-icon-subtle text-danger" title="Clear current chat">
+            <i data-lucide="trash-2" class="icon-xs"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Dynamic Content Views -->
+      <div class="agent-view-viewport">
+
+        <!-- 1. Opening Page (Hero Logo, Overview, and Feature Showcase) -->
+        <section class="landing-home-view" id="landingHomeView">
+          <div class="landing-content-card">
+            
+            <!-- Opening Page Hero Brand Logo with Hover Glow -->
+            <div class="landing-hero-logo">
+              <div class="brand-logo large-hero-logo" title="YouTube AI Copilot">
+                <div class="logo-core">
+                  <i data-lucide="play" class="logo-play-icon"></i>
+                </div>
+                <div class="logo-ai-badge">
+                  <svg class="ai-sparkle-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z" fill="#FFFFFF"/>
+                    <path d="M19 2C19 3.66 17.66 5 16 5C17.66 5 19 6.34 19 8C19 6.34 20.34 5 22 5C20.34 5 19 3.66 19 2Z" fill="#FFFFFF"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Title & Subtitle -->
+            <h1 class="landing-title">YouTube <span class="text-gradient-red">AI Copilot</span></h1>
+            <p class="landing-subtitle">
+              An intelligent multimodal video agent that watches, transcribes, and understands YouTube videos. Grounding every answer with precise timestamps, staged hybrid RAG, and real-time insights.
+            </p>
+
+            <!-- Quick Start Hero Actions -->
+            <div class="landing-cta-row">
+              <button id="btnHeroStartChat" class="btn btn-primary btn-md btn-gradient-glow" title="Start a fresh chat workspace">
+                <i data-lucide="square-pen" class="icon-sm"></i>
+                <span>Start New Chat</span>
+              </button>
+              <button id="btnHeroSample" class="btn btn-secondary btn-md btn-glow-hover" title="Explore sample DeepMind podcast">
+                <i data-lucide="sparkles" class="icon-sm text-indigo"></i>
+                <span>Try Sample Video</span>
+              </button>
+            </div>
+
+            <!-- Fast Ingestion Omnibar -->
+            <div class="landing-omnibar">
+              <div class="omnibar-input-wrap">
+                <i data-lucide="youtube" class="omnibar-icon text-red"></i>
+                <input 
+                  type="text" 
+                  id="heroUrlInput" 
+                  placeholder="Paste YouTube URL or video ID (e.g. https://www.youtube.com/watch?v=Gfr50f6ZBvo)..." 
+                  autocomplete="off" 
+                  spellcheck="false" 
+                />
+                <button id="btnHeroIngest" class="btn btn-primary btn-sm btn-gradient-glow">
+                  <i data-lucide="arrow-right" class="icon-xs"></i>
+                  <span>Ingest &amp; Chat</span>
+                </button>
+              </div>
+              <!-- Ingestion Progress Banner -->
+              <div id="heroIngestBanner" class="ingest-banner hidden">
+                <div class="banner-spinner"></div>
+                <span id="heroBannerText">Extracting transcript segments, chunking timestamps &amp; building FAISS index...</span>
+              </div>
+            </div>
+
+            <!-- What This App Is & What It Can Do (Feature Showcase Grid) -->
+            <div class="features-showcase-section">
+              <div class="features-header">
+                <span class="features-pill-badge"><i data-lucide="zap" class="icon-xs text-amber"></i> Core Capabilities</span>
+                <h2 class="features-title">What YouTube AI Copilot Can Do</h2>
+                <p class="features-desc">Discover the state-of-the-art features powering your multimodal video analysis.</p>
+              </div>
+
+              <div class="landing-features-grid">
+                <!-- Feature 1 -->
+                <div class="feature-card">
+                  <div class="feature-icon-wrap icon-red">
+                    <i data-lucide="clock" class="feature-icon"></i>
+                  </div>
+                  <div class="feature-card-content">
+                    <div class="feature-badge-row">
+                      <span class="feature-tag tag-red">Verified Grounding</span>
+                    </div>
+                    <h3>Precision Timestamp Citations</h3>
+                    <p>Every response cites exact <code class="code-ts">[MM:SS]</code> timestamps. Click any citation to seek the player directly to the moment it was spoken.</p>
+                  </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card">
+                  <div class="feature-icon-wrap icon-indigo">
+                    <i data-lucide="cpu" class="feature-icon"></i>
+                  </div>
+                  <div class="feature-card-content">
+                    <div class="feature-badge-row">
+                      <span class="feature-tag tag-indigo">Staged Hybrid RAG</span>
+                    </div>
+                    <h3>Semantic &amp; Lexical Retrieval</h3>
+                    <p>Combines Google Text Embeddings with FAISS dense vector search and BM25 keyword matching to eliminate hallucinations and retrieve accurate context.</p>
+                  </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card">
+                  <div class="feature-icon-wrap icon-cyan">
+                    <i data-lucide="file-text" class="feature-icon"></i>
+                  </div>
+                  <div class="feature-card-content">
+                    <div class="feature-badge-row">
+                      <span class="feature-tag tag-cyan">AI Synthesis</span>
+                    </div>
+                    <h3>Executive Summaries &amp; Takeaways</h3>
+                    <p>Instantly distills multi-hour discussions, lectures, and tutorials into key bullet points, chapter breakdowns, and interactive review quizzes.</p>
+                  </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card">
+                  <div class="feature-icon-wrap icon-emerald">
+                    <i data-lucide="film" class="feature-icon"></i>
+                  </div>
+                  <div class="feature-card-content">
+                    <div class="feature-badge-row">
+                      <span class="feature-tag tag-emerald">Synchronized Player</span>
+                    </div>
+                    <h3>Split-Screen Video &amp; Metadata</h3>
+                    <p>Watch the embedded 16:9 player side-by-side with your chat. View duration, speaker info, extracted chunks, and total word count in real time.</p>
+                  </div>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card">
+                  <div class="feature-icon-wrap icon-purple">
+                    <i data-lucide="list-video" class="feature-icon"></i>
+                  </div>
+                  <div class="feature-card-content">
+                    <div class="feature-badge-row">
+                      <span class="feature-tag tag-purple">Live Filter</span>
+                    </div>
+                    <h3>Real-Time Transcript Search</h3>
+                    <p>Browse through hundreds of timestamped segments. Filter sentences with instant keyword search and click any line to seek playback.</p>
+                  </div>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="feature-card">
+                  <div class="feature-icon-wrap icon-amber">
+                    <i data-lucide="globe" class="feature-icon"></i>
+                  </div>
+                  <div class="feature-card-content">
+                    <div class="feature-badge-row">
+                      <span class="feature-tag tag-amber">Web Augmentation</span>
+                    </div>
+                    <h3>DuckDuckGo Web Search Agent</h3>
+                    <p>Need information beyond the video? Toggle live web search to pull fresh external facts, documentation, or background information seamlessly.</p>
+                  </div>
+                </div>
+
+                <!-- Feature 7 -->
+                <div class="feature-card">
+                  <div class="feature-icon-wrap icon-rose">
+                    <i data-lucide="activity" class="feature-icon"></i>
+                  </div>
+                  <div class="feature-card-content">
+                    <div class="feature-badge-row">
+                      <span class="feature-tag tag-rose">RAG Triad HUD</span>
+                    </div>
+                    <h3>Benchmarking &amp; Quality Metrics</h3>
+                    <p>Built-in evaluation engine scores Faithfulness, Answer Relevancy, Context Precision, and Context Recall for continuous quality assurance.</p>
+                  </div>
+                </div>
+
+                <!-- Feature 8 -->
+                <div class="feature-card">
+                  <div class="feature-icon-wrap icon-blue">
+                    <i data-lucide="message-square" class="feature-icon"></i>
+                  </div>
+                  <div class="feature-card-content">
+                    <div class="feature-badge-row">
+                      <span class="feature-tag tag-blue">Multi-Session</span>
+                    </div>
+                    <h3>Persistent Multi-Chat History</h3>
+                    <p>Switch between conversations effortlessly. All your video chats, metadata, and insights remain safely saved in local storage.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- 2. Active Chat & Video Analysis Workspace (Classic 2-Column Split) -->
+        <section class="active-workspace-view hidden" id="activeWorkspaceView">
+          <div class="workspace-split-layout" id="workspaceSplitLayout">
+
+            <!-- Left: Video Ingestion, Video Player & Grounding Hub Tabs -->
+            <div class="workspace-media-column" id="workspaceMediaColumn">
+              
+              <!-- Section 1: Paste Link Ingestion Section -->
+              <div class="workspace-ingest-card">
+                <div class="ingest-input-row">
+                  <div class="ingest-input-wrap">
+                    <i data-lucide="youtube" class="ingest-yt-icon text-red"></i>
+                    <input 
+                      type="text" 
+                      id="landingUrlInput" 
+                      placeholder="Paste YouTube URL or video ID (e.g. https://www.youtube.com/watch?v=Gfr50f6ZBvo)..." 
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                    <button id="btnLandingClearUrl" class="btn-clear-input hidden" title="Clear">
+                      <i data-lucide="x" class="icon-xs"></i>
+                    </button>
+                  </div>
+                  <div class="ingest-buttons-row">
+                    <button id="btnLandingSample" class="btn btn-secondary btn-sm btn-glow-hover" title="Load Demis Hassabis DeepMind Podcast">
+                      <i data-lucide="sparkles" class="icon-xs text-indigo"></i>
+                      <span>Sample Video</span>
+                    </button>
+                    <button id="btnLandingIngest" class="btn btn-primary btn-sm btn-gradient-glow">
+                      <i data-lucide="arrow-right" class="icon-xs"></i>
+                      <span>Ingest Video</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Ingestion Progress Banner -->
+                <div id="landingIngestBanner" class="ingest-banner hidden">
+                  <div class="banner-spinner"></div>
+                  <span id="landingBannerText">Extracting transcript segments, timestamp chunking & building FAISS index...</span>
+                </div>
+              </div>
+
+              <!-- Section 2: Video Player & Metadata -->
+              <div class="workspace-player-card">
+                <div class="video-card">
+                  <div id="playerPlaceholder" class="video-placeholder">
+                    <div class="placeholder-icon-wrap">
+                      <i data-lucide="youtube" class="placeholder-icon"></i>
+                    </div>
+                    <h4>No Video Loaded</h4>
+                    <p>Paste a YouTube URL above or click <strong>Sample Video</strong> to start grounding.</p>
+                  </div>
+                  <div id="ytPlayerWrap" class="yt-player-container hidden">
+                    <div id="ytPlayer"></div>
+                  </div>
+                </div>
+
+                <!-- Video Metadata Card -->
+                <div id="videoMetaCard" class="video-meta-card hidden">
+                  <div class="meta-title-row">
+                    <h3 id="videoTitle" class="video-heading">Loading Video Title...</h3>
+                    <span id="videoDuration" class="meta-badge duration-badge">00:00</span>
+                  </div>
+                  <div class="meta-stats-row">
+                    <span class="meta-stat"><i data-lucide="user-check" class="icon-xs text-indigo"></i> <span id="videoAuthor">Creator</span></span>
+                    <span class="meta-stat"><i data-lucide="layers" class="icon-xs text-cyan"></i> <span id="videoChunksCount">0</span> Chunks</span>
+                    <span class="meta-stat"><i data-lucide="file-text" class="icon-xs text-emerald"></i> <span id="videoWordsCount">0</span> Words</span>
+                    <button id="btnCopyVideoLink" class="btn-stat-action" title="Copy YouTube Link">
+                      <i data-lucide="copy" class="icon-xs"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 3: Summary, Transcript & Benchmarks Tabs -->
+              <div class="workspace-tabs-card">
+                <!-- Tabbed Navigation -->
+                <div class="hub-tabs-header">
+                  <button class="hub-tab-btn active" data-tab="summaryTab">
+                    <i data-lucide="sparkle" class="icon-xs"></i> Summary
+                  </button>
+                  <button class="hub-tab-btn" data-tab="transcriptTab">
+                    <i data-lucide="list-video" class="icon-xs"></i> Transcript (<span id="tabSegCount">0</span>)
+                  </button>
+                  <button class="hub-tab-btn" data-tab="evalTab">
+                    <i data-lucide="bar-chart-2" class="icon-xs"></i> Benchmarks
+                  </button>
+                </div>
+
+                <!-- Hub Tab Views -->
+                <div class="hub-tabs-body">
+                  <!-- Summary Tab -->
+                  <div id="summaryTab" class="hub-pane active">
+                    <div id="summaryContent" class="markdown-body">
+                      <div class="empty-hint">
+                        <i data-lucide="file-text" class="hint-icon"></i>
+                        <p>Executive summary and key takeaways will render here.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Transcript Tab -->
+                  <div id="transcriptTab" class="hub-pane">
+                    <div class="transcript-filter-bar">
+                      <i data-lucide="search" class="icon-xs text-muted"></i>
+                      <input type="text" id="transcriptSearchInput" placeholder="Filter transcript in real-time..." />
+                      <span id="transcriptMatchCount" class="badge-mini">0 segments</span>
+                    </div>
+                    <div id="transcriptList" class="transcript-scroll-list">
+                      <div class="empty-hint">
+                        <i data-lucide="align-left" class="hint-icon"></i>
+                        <p>Timestamped transcript will appear once loaded.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Evaluation HUD Tab -->
+                  <div id="evalTab" class="hub-pane">
+                    <div class="eval-top-bar">
+                      <div>
+                        <h4>RAG Benchmarks</h4>
+                        <p class="eval-subtext">Grounding & Precision Metrics.</p>
+                      </div>
+                      <button id="btnRunEval" class="btn btn-xs btn-outline-cyan">
+                        <i data-lucide="play" class="icon-xs"></i> Run Suite
+                      </button>
+                    </div>
+
+                    <div class="eval-hud-grid">
+                      <div class="hud-metric-card">
+                        <div class="metric-top">
+                          <span class="metric-name">Faithfulness</span>
+                          <span class="metric-badge green" id="badgeFaithfulness">High</span>
+                        </div>
+                        <div class="metric-val" id="evalFaithfulness">--%</div>
+                        <div class="metric-progress-bar"><div class="progress-fill fill-green" id="barFaithfulness" style="width: 0%"></div></div>
+                        <span class="metric-desc">Factual grounding</span>
+                      </div>
+
+                      <div class="hud-metric-card">
+                        <div class="metric-top">
+                          <span class="metric-name">Answer Relevancy</span>
+                          <span class="metric-badge cyan" id="badgeRelevancy">High</span>
+                        </div>
+                        <div class="metric-val" id="evalRelevancy">--%</div>
+                        <div class="metric-progress-bar"><div class="progress-fill fill-cyan" id="barRelevancy" style="width: 0%"></div></div>
+                        <span class="metric-desc">Query alignment</span>
+                      </div>
+
+                      <div class="hud-metric-card">
+                        <div class="metric-top">
+                          <span class="metric-name">Context Precision</span>
+                          <span class="metric-badge indigo" id="badgePrecision">Optimal</span>
+                        </div>
+                        <div class="metric-val" id="evalPrecision">--%</div>
+                        <div class="metric-progress-bar"><div class="progress-fill fill-indigo" id="barPrecision" style="width: 0%"></div></div>
+                        <span class="metric-desc">Signal-to-noise</span>
+                      </div>
+
+                      <div class="hud-metric-card">
+                        <div class="metric-top">
+                          <span class="metric-name">Context Recall</span>
+                          <span class="metric-badge purple" id="badgeRecall">Good</span>
+                        </div>
+                        <div class="metric-val" id="evalRecall">--%</div>
+                        <div class="metric-progress-bar"><div class="progress-fill fill-purple" id="barRecall" style="width: 0%"></div></div>
+                        <span class="metric-desc">Knowledge capture</span>
+                      </div>
+                    </div>
+
+                    <div class="eval-composite-banner">
+                      <div class="composite-score-wrap">
+                        <span class="composite-label">Quality Score:</span>
+                        <span class="composite-number text-gradient-indigo" id="evalQualityComposite">-- / 100</span>
+                      </div>
+                      <div class="composite-meta">
+                        <span>⚡ <strong id="evalLatency">-- ms</strong></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Draggable Workspace Splitter (Resize 2 Sections) -->
+            <div class="workspace-splitter" id="workspaceSplitter" title="Drag to resize sections (Double-click to reset 50/50)">
+              <div class="splitter-grip-handle">
+                <span class="grip-dot"></span>
+                <span class="grip-dot"></span>
+                <span class="grip-dot"></span>
+              </div>
+            </div>
+
+            <!-- Right: Interactive AI Video Copilot Chat -->
+            <div class="chat-agent-column" id="chatAgentColumn">
+              
+              <!-- Quick Prompt Chips Carousel -->
+              <div class="quick-prompts-carousel" id="quickPromptsWrap">
+                <div class="chips-container" id="quickChipsList">
+                  <button class="chip-item" data-query="What is the core takeaway and executive summary of this video?">
+                    🎯 Executive Summary
+                  </button>
+                  <button class="chip-item" data-query="Can you explain the main technical topics discussed and cite timestamps?">
+                    🔑 Key Concepts
+                  </button>
+                  <button class="chip-item" data-query="Generate a 3-question multiple choice quiz on this video with answers.">
+                    📝 Quiz Me
+                  </button>
+                  <button class="chip-item" data-query="What was the concluding message or final thoughts from the speaker?">
+                    💡 Conclusion
+                  </button>
+                </div>
+              </div>
+
+              <!-- Scrollable Messages Container -->
+              <div class="chat-messages-scroll" id="chatMessages">
+                <!-- Messages rendered dynamically -->
+              </div>
+
+              <!-- Floating Scroll To Bottom Button -->
+              <button id="btnScrollBottom" class="btn-scroll-bottom hidden" title="Scroll to bottom">
+                <i data-lucide="chevron-down" class="icon-sm"></i>
+              </button>
+
+              <!-- Sticky Chat Input Form -->
+              <div class="chat-footer-wrapper">
+                <form id="chatForm" class="chat-input-card">
+                  <textarea 
+                    id="chatInput" 
+                    rows="1" 
+                    placeholder="Ask anything about the video (e.g. What did Demis say about AlphaFold?)..." 
+                    required
+                  ></textarea>
+                  <div class="chat-input-controls">
+                    <span class="key-hint">Press <strong>Enter ↵</strong> to send, <strong>Shift+Enter</strong> for newline</span>
+                    <div class="chat-controls-actions">
+                      <button type="button" id="btnWebSearchToggle" class="btn-web-toggle" title="Toggle DuckDuckGo Web Search mode">
+                        <i data-lucide="globe" class="icon-xs"></i>
+                        <span class="toggle-text">Web Search</span>
+                        <span class="toggle-switch-track"><span class="toggle-switch-thumb"></span></span>
+                      </button>
+                      <button type="submit" id="btnSend" class="btn-send-glow" title="Send question">
+                        <i data-lucide="send" class="icon-sm"></i>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic 3-Dots Context Menu Container (Portal) -->
+  <div id="sessionContextMenu" class="session-dropdown-menu hidden">
+    <button class="context-menu-item" id="menuItemRename">
+      <i data-lucide="edit-3" class="icon-xs"></i>
+      <span>Rename</span>
+    </button>
+    <button class="context-menu-item" id="menuItemShare">
+      <i data-lucide="share-2" class="icon-xs"></i>
+      <span>Share & Export</span>
+    </button>
+    <button class="context-menu-item" id="menuItemPin">
+      <i data-lucide="pin" class="icon-xs"></i>
+      <span id="menuPinText">Pin to Top</span>
+    </button>
+    <div class="context-menu-divider"></div>
+    <button class="context-menu-item text-danger" id="menuItemDelete">
+      <i data-lucide="trash-2" class="icon-xs"></i>
+      <span>Delete Chat</span>
+    </button>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- In-Website Modal Dialog Portal -->
+  <div class="in-app-modal-overlay hidden" id="inAppModalOverlay">
+    <div class="in-app-modal-card" id="inAppModalCard">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge badge-danger" id="modalIconBadge">
+            <i data-lucide="trash-2" class="icon-sm" id="modalIcon"></i>
+          </div>
+          <h3 class="modal-title" id="modalTitle">Confirm Action</h3>
+        </div>
+        <button class="btn-icon-subtle btn-close-modal" id="btnModalClose" title="Close">
+          <i data-lucide="x" class="icon-xs"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-message" id="modalMessage">Are you sure you want to proceed?</p>
+        <div class="modal-input-wrap hidden" id="modalInputWrap">
+          <input type="text" id="modalInput" class="modal-text-input" spellcheck="false" autocomplete="off" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" id="btnModalCancel">Cancel</button>
+        <button class="btn btn-danger btn-sm" id="btnModalConfirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="/static/app.js?v=5.7"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

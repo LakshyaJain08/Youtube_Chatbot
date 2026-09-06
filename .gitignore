@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+
+# Logs & Models Cache
+logs/
+*.log
+models/*
+!models/.gitkeep
+outputs/*
+!outputs/.gitkeep
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+*.pkl
+*.faiss
+*.index
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.secret
+*.pem
+*.key
+.DS_Store
+
+# IDE & Testing & Scratch
+.pytest_cache/
+.coverage
+htmlcov/
+.vscode/
+.idea/
+.gemini/
+scratch/
