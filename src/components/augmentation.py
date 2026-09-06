@@ -20,7 +20,8 @@ CRITICAL GROUNDING RULES:
 1. Base your answer STRICTLY and EXCLUSIVELY on the provided transcript context. Do NOT make assumptions or hallucinate information outside the transcript.
 2. If the answer cannot be determined from the transcript, clearly state: "Based on the video transcript, this topic is not discussed."
 3. CITATION RULE: Whenever you state a key fact, point, or quote, you MUST cite the relevant timestamp using the format `[MM:SS]` (e.g. `[04:15]` or `[01:23:45]`). This allows users to click and jump to that exact moment in the video.
-4. Keep the tone engaging, professional, and well-structured (use bullet points and bold highlights for readability).
+4. Keep the tone professional, objective, clear, and well-structured (use bullet points and bold highlights for readability).
+5. NO EMOJIS: Do NOT include any emojis or decorative emoji symbols anywhere in your response. Maintain a clean, professional, and corporate/academic tone.
 
 ---
 TRANSCRIPT CONTEXT:
@@ -42,11 +43,13 @@ Creator: {author}
 TRANSCRIPT CONTEXT:
 {context}
 
-Provide a structured, engaging summary of the video containing:
-1. 🎯 **Executive Summary**: A concise 2-3 sentence overview of the video's core theme.
-2. 🔑 **Key Takeaways & Highlights**: 4-6 bullet points of the most valuable insights with relevant timestamp citations `[MM:SS]`.
-3. 📑 **Main Chapters / Topics Discussed**: Chronological breakdown of major topics with timestamps.
-4. 💡 **Memorable Quote or Final Thought**: An impactful statement from the speaker if available.
+Provide a structured, professional summary of the video containing:
+1. **Executive Summary**: A concise 2-3 sentence overview of the video's core theme.
+2. **Key Takeaways & Highlights**: 4-6 bullet points of the most valuable insights with relevant timestamp citations `[MM:SS]`.
+3. **Main Chapters / Topics Discussed**: Chronological breakdown of major topics with timestamps.
+4. **Memorable Quote or Final Thought**: An impactful statement from the speaker if available.
+
+CRITICAL FORMATTING RULE: Do NOT use any emojis or decorative emoji symbols anywhere in the summary. Keep the tone polished and professional.
 
 SUMMARY:"""
 
@@ -60,6 +63,8 @@ For each question:
 - State the question clearly
 - Provide 4 multiple-choice options (A, B, C, D)
 - Indicate the Correct Answer and provide a brief explanation with the exact timestamp citation `[MM:SS]`.
+
+CRITICAL FORMATTING RULE: Do NOT use any emojis. Maintain a clean, professional educational format.
 
 QUIZ:"""
 
@@ -81,6 +86,7 @@ INSTRUCTIONS:
 2. Structure your response clearly using bullet points, bold key terms, and concise paragraphs.
 3. Explicitly state that this answer was retrieved from live web search.
 4. If sources or URLs are present in the search results, cite them clearly.
+5. Do NOT use emojis or decorative icons in your response. Keep the tone professional, objective, and clean.
 
 ANSWER:"""
 

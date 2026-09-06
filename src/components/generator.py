@@ -14,7 +14,7 @@ from google.genai import types
 
 from src.utils.logger import get_logger
 from src.utils.exceptions import LLMGenerationError
-from src.utils.common import parse_timestamp_to_seconds
+from src.utils.common import parse_timestamp_to_seconds, strip_emojis
 from src.config.configuration import get_config
 
 logger = get_logger("components.generator")
@@ -138,7 +138,7 @@ class ResponseGenerator:
                     )
                 )
                 if response and response.text:
-                    return response.text.strip()
+                    return strip_emojis(response.text.strip())
             except Exception as e:
                 logger.warning(f"Model '{model_name}' invocation error ({e}), trying next candidate model...")
                 last_error = e

@@ -78,7 +78,7 @@ class RAGPipeline:
             if not enable_web_search:
                 # User clicked to search web, but toggle is OFF
                 off_msg = (
-                    "⚠️ The **Web Search toggle is currently OFF**.\n\n"
+                    "**Web Search toggle is currently OFF**.\n\n"
                     "Please turn **ON** the Web Search toggle (located to the left of the Send button) and try again to search DuckDuckGo."
                 )
                 total_latency_ms = round((time.time() - start_time) * 1000, 2)
@@ -113,7 +113,7 @@ class RAGPipeline:
             )
             raw_answer = self.generator.generate_text(prompt)
             formatted_answer = (
-                f"🌐 **DuckDuckGo Web Search Result:**\n\n"
+                f"**DuckDuckGo Web Search Result:**\n\n"
                 f"{raw_answer}\n\n"
                 f"> *Note: This answer was retrieved from external web search sources because it was not covered in the video transcript.*"
             )
@@ -164,7 +164,7 @@ class RAGPipeline:
         if not is_grounded:
             web_option_card = (
                 f"\n\n---\n"
-                f"🌐 **Information not found in this video.** Would you like me to search the web for an answer?\n\n"
+                f"**Information not found in this video.** Would you like me to search the web for an answer?\n\n"
                 f"[SEARCH_WEB_OPTION:{question}]"
             )
             answer_text += web_option_card

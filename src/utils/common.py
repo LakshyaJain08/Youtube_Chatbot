@@ -122,3 +122,33 @@ def load_json(file_path: Union[str, Path]) -> Optional[Any]:
         return None
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def strip_emojis(text: str) -> str:
+    """
+    Strips unnecessary decorative emojis and pictographs from text to maintain
+    a clean, professional appearance while preserving standard punctuation and markdown.
+    """
+    if not text or not isinstance(text, str):
+        return ""
+
+    cleaned_chars = []
+    for ch in text:
+        code = ord(ch)
+        if (
+            0x1F300 <= code <= 0x1FAFF
+            or 0x2700 <= code <= 0x27BF
+            or 0x2600 <= code <= 0x26FF
+            or 0xFE00 <= code <= 0xFE0F
+            or 0x1F000 <= code <= 0x1F02F
+            or 0x1F0A0 <= code <= 0x1F0FF
+        ):
+            continue
+        cleaned_chars.append(ch)
+
+    result = "".join(cleaned_chars)
+    result = re.sub(r'[ \t]+', ' ', result)
+    result = re.sub(r'^[ \t]+', '', result, flags=re.MULTILINE)
+    result = re.sub(r'(\d+\.)\s+\*\*', r'\1 **', result)
+    return result.strip()
+

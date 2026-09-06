@@ -56,7 +56,7 @@ btnExtIngest.addEventListener("click", async () => {
   if (!currentVideoId) return;
 
   btnExtIngest.disabled = true;
-  btnExtIngest.textContent = "⏳ Analyzing Subtitles & Building Index...";
+  btnExtIngest.textContent = "Analyzing Subtitles & Building Index...";
 
   try {
     const res = await fetch(`${API_BASE}/api/ingest`, {
@@ -71,7 +71,7 @@ btnExtIngest.addEventListener("click", async () => {
     }
 
     const data = await res.json();
-    btnExtIngest.textContent = "✅ Indexed & Ready!";
+    btnExtIngest.textContent = "Indexed & Ready";
     extChatInput.disabled = false;
     btnExtSend.disabled = false;
 
@@ -80,7 +80,7 @@ btnExtIngest.addEventListener("click", async () => {
   } catch (err) {
     alert(`Error: ${err.message}. Make sure the backend server is running on http://127.0.0.1:8000`);
     btnExtIngest.disabled = false;
-    btnExtIngest.textContent = "⚡ Ingest & Analyze Video";
+    btnExtIngest.textContent = "Ingest & Analyze Video";
   }
 });
 
@@ -122,7 +122,7 @@ extChatForm.addEventListener("submit", async (e) => {
     conversationHistory.push({ role: "user", content: q });
     conversationHistory.push({ role: "assistant", content: data.answer });
   } catch (err) {
-    assistantDiv.textContent = `⚠️ Error: ${err.message}`;
+    assistantDiv.textContent = `Error: ${err.message}`;
   } finally {
     extChatContainer.scrollTop = extChatContainer.scrollHeight;
   }
@@ -158,7 +158,7 @@ function appendAssistantMessage(text) {
 function formatCitations(text) {
   return text.replace(/\[(\d{1,2}:\d{2})\]/g, (match, ts) => {
     const sec = parseTs(ts);
-    return `<button class="ts-tag" data-sec="${sec}">⏱️ [${ts}]</button>`;
+    return `<button class="ts-tag" data-sec="${sec}">[${ts}]</button>`;
   });
 }
 

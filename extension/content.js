@@ -24,7 +24,7 @@ function injectFloatingCopilotBadge() {
 
   const badge = document.createElement("div");
   badge.id = "yt-copilot-badge";
-  badge.innerHTML = "⚡ Chatbot Ready";
+  badge.innerHTML = '<svg style="vertical-align: middle; margin-right: 5px; display: inline-block;" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Chatbot Ready';
   badge.style.cssText = `
     position: fixed;
     bottom: 24px;

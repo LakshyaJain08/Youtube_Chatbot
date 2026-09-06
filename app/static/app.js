@@ -398,7 +398,7 @@ function createNewChatSession(videoData = null) {
   };
 
   if (videoData) {
-    const welcomeMsg = `### Video Successfully Indexed! 🎉\n\n**${videoData.metadata.title}** is ready for QA. Ask any specific question, explore topics, or test understanding.`;
+    const welcomeMsg = `### Video Successfully Indexed\n\n**${videoData.metadata.title}** is ready for QA. Ask any specific question, explore topics, or test understanding.`;
     newSession.history.push({ role: "assistant", content: welcomeMsg });
   }
 
@@ -495,7 +495,7 @@ function shareChatSession(sessionId) {
 
   if (session.history && session.history.length) {
     for (const turn of session.history) {
-      const role = turn.role === "user" ? "### 👤 User" : "### 🤖 YouTube Chatbot";
+      const role = turn.role === "user" ? "### User" : "### YouTube Chatbot";
       md += `${role}\n${turn.content}\n\n`;
     }
   } else {
@@ -865,7 +865,7 @@ async function executeIngestUrl(url, isLanding = true, isHero = false) {
       activeSession.summary = data.summary;
       activeSession.suggested_questions = data.suggested_questions;
       activeSession.updated_at = Date.now();
-      const welcomeMsg = `### Video Successfully Indexed! 🎉\n\n**${data.metadata.title}** is ready for QA. Ask any specific question, explore topics, or test understanding.`;
+      const welcomeMsg = `### Video Successfully Indexed\n\n**${data.metadata.title}** is ready for QA. Ask any specific question, explore topics, or test understanding.`;
       activeSession.history = [{ role: "assistant", content: welcomeMsg }];
       saveSessionsToStorage();
       renderSidebarSessions();
@@ -1120,7 +1120,7 @@ async function handleSendMessage(e) {
     updateEvaluationMetrics(data.evaluation_metrics, data.latency_ms || elapsed);
   } catch (error) {
     console.error("Chat query error:", error);
-    bubbleEl.innerHTML = `<span style="color: var(--accent-rose);">⚠️ Error: ${error.message}</span>`;
+    bubbleEl.innerHTML = `<span style="color: var(--accent-rose);"><i data-lucide="alert-circle" class="icon-xs" style="vertical-align: middle; margin-right: 4px;"></i>Error: ${escapeHtml(error.message)}</span>`;
   } finally {
     isProcessing = false;
     scrollChatToBottom();
@@ -1200,10 +1200,19 @@ function renderAssistantMessage(item) {
   chatMessages.appendChild(msgDiv);
 }
 
+function stripEmojis(text) {
+  if (!text || typeof text !== "string") return "";
+  return text
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{2B50}-\u{2B55}\u{FE00}-\u{FE0F}]/gu, "")
+    .replace(/[ \t]+/g, " ")
+    .replace(/^[ \t]+/gm, "");
+}
+
 function formatMarkdownWithCitations(markdownText) {
   if (!markdownText) return "";
 
-  let html = marked.parse(markdownText);
+  const cleanText = stripEmojis(markdownText);
+  let html = marked.parse(cleanText);
 
   // Replace timestamp patterns [MM:SS] or [HH:MM:SS] with clickable badge buttons
   const tsPattern = /\[(\d{1,2}:\d{2}(?::\d{2})?)\]/g;
@@ -1256,8 +1265,8 @@ async function executeWebSearchQuery(query) {
   if (!activeSession) return;
 
   // Append user message
-  appendUserMessage(`🔍 Search Web for: "${query}"`);
-  activeSession.history.push({ role: "user", content: `🔍 Search Web for: "${query}"` });
+  appendUserMessage(`Search Web for: "${query}"`);
+  activeSession.history.push({ role: "user", content: `Search Web for: "${query}"` });
   activeSession.updated_at = Date.now();
   saveSessionsToStorage();
 
@@ -1327,7 +1336,7 @@ async function executeWebSearchQuery(query) {
     updateEvaluationMetrics(data.evaluation_metrics, data.latency_ms || elapsed);
   } catch (error) {
     console.error("Web search query error:", error);
-    bubbleEl.innerHTML = `<span style="color: var(--accent-rose);">⚠️ Error: ${error.message}</span>`;
+    bubbleEl.innerHTML = `<span style="color: var(--accent-rose);"><i data-lucide="alert-circle" class="icon-xs" style="vertical-align: middle; margin-right: 4px;"></i>Error: ${escapeHtml(error.message)}</span>`;
   } finally {
     isProcessing = false;
     scrollChatToBottom();

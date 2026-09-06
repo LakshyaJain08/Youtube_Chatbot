@@ -1549,6 +1549,9 @@ body.resizing-vertical input {
 }
 
 .chip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: #1e1e1e;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 9999px;
