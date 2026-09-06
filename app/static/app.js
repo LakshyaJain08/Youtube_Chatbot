@@ -1864,8 +1864,21 @@ btnCopyVideoLink.addEventListener("click", () => {
   }
 });
 
-// Toast Helper
-function showToast(message, type = "info") {
+// Toast Helper (Snappy duration for toggles and status messages)
+let toastTimer = null;
+function showToast(message, type = "info", duration = null) {
+  // Snappy display: 1100ms for toggles/info, 2000ms for errors
+  if (duration === null) {
+    duration = type === "error" ? 2000 : 1100;
+  }
+
+  // Clear existing toasts so multiple toggles don't stack or linger
+  if (toastContainer) {
+    while (toastContainer.firstChild) {
+      toastContainer.removeChild(toastContainer.firstChild);
+    }
+  }
+
   const toast = document.createElement("div");
   toast.className = `toast-item ${type}`;
   let icon = "info";
@@ -1876,12 +1889,15 @@ function showToast(message, type = "info") {
   toastContainer.appendChild(toast);
   lucide.createIcons();
 
-  setTimeout(() => {
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
     toast.style.opacity = "0";
-    toast.style.transform = "translateY(10px)";
-    toast.style.transition = "all 0.25s ease";
-    setTimeout(() => toast.remove(), 250);
-  }, 3200);
+    toast.style.transform = "translateY(8px)";
+    toast.style.transition = "all 0.2s ease";
+    setTimeout(() => {
+      if (toast.parentNode) toast.remove();
+    }, 200);
+  }, duration);
 }
 
 // Global Keyboard Shortcuts
