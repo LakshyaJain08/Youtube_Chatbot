@@ -1857,13 +1857,29 @@ btnExportChat.addEventListener("click", () => {
 });
 
 // Copy Video Link
-btnCopyVideoLink.addEventListener("click", () => {
-  const activeSession = getActiveSession();
-  if (activeSession && activeSession.video_id) {
-    navigator.clipboard.writeText(`https://www.youtube.com/watch?v=${activeSession.video_id}`);
-    showToast("Copied video link to clipboard!", "success");
-  }
-});
+if (btnCopyVideoLink) {
+  btnCopyVideoLink.addEventListener("click", () => {
+    const activeSession = getActiveSession();
+    if (activeSession && activeSession.video_id) {
+      const videoUrl = `https://www.youtube.com/watch?v=${activeSession.video_id}`;
+      navigator.clipboard.writeText(videoUrl).then(() => {
+        showToast("Copied video link to clipboard!", "success");
+        btnCopyVideoLink.classList.add("copied");
+        btnCopyVideoLink.innerHTML = `<i data-lucide="check" class="icon-xs"></i> <span>Copied!</span>`;
+        if (window.lucide) lucide.createIcons();
+        setTimeout(() => {
+          btnCopyVideoLink.classList.remove("copied");
+          btnCopyVideoLink.innerHTML = `<i data-lucide="copy" class="icon-xs"></i> <span>Copy Link</span>`;
+          if (window.lucide) lucide.createIcons();
+        }, 1500);
+      }).catch(() => {
+        showToast("Could not copy video link to clipboard", "error");
+      });
+    } else {
+      showToast("No active video loaded to copy link.", "info");
+    }
+  });
+}
 
 // Toast Helper (Snappy duration for toggles and status messages)
 let toastTimer = null;

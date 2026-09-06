@@ -12,7 +12,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Marked.js for Markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="/static/style.css?v=6.1" />
+  <link rel="stylesheet" href="/static/style.css?v=6.2" />
 </head>
 <body class="dark-theme">
   <div class="agent-app-shell">
@@ -400,8 +400,9 @@
                     <span class="meta-stat"><i data-lucide="user-check" class="icon-xs text-indigo"></i> <span id="videoAuthor">Creator</span></span>
                     <span class="meta-stat"><i data-lucide="layers" class="icon-xs text-cyan"></i> <span id="videoChunksCount">0</span> Chunks</span>
                     <span class="meta-stat"><i data-lucide="file-text" class="icon-xs text-emerald"></i> <span id="videoWordsCount">0</span> Words</span>
-                    <button id="btnCopyVideoLink" class="btn-stat-action" title="Copy YouTube Link">
+                    <button id="btnCopyVideoLink" class="btn-stat-action" title="Copy YouTube Video Link">
                       <i data-lucide="copy" class="icon-xs"></i>
+                      <span>Copy Link</span>
                     </button>
                   </div>
                 </div>
@@ -645,7 +646,7 @@
 
   <!-- YouTube IFrame API -->
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="/static/app.js?v=6.1"></script>
+  <script src="/static/app.js?v=6.2"></script>
   <script>
     lucide.createIcons();
   </script>
