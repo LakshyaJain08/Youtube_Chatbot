@@ -12,7 +12,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Marked.js for Markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="/static/style.css?v=6.2" />
+  <link rel="stylesheet" href="/static/style.css?v=6.3" />
 </head>
 <body class="dark-theme">
   <div class="agent-app-shell">
@@ -340,76 +340,88 @@
             <!-- Left: Video Ingestion, Video Player & Grounding Hub Tabs -->
             <div class="workspace-media-column" id="workspaceMediaColumn">
               
-              <!-- Section 1: Paste Link Ingestion Section -->
-              <div class="workspace-ingest-card">
-                <div class="ingest-input-row">
-                  <div class="ingest-input-wrap">
-                    <i data-lucide="youtube" class="ingest-yt-icon text-red"></i>
-                    <input 
-                      type="text" 
-                      id="landingUrlInput" 
-                      placeholder="Paste YouTube URL or video ID (e.g. https://www.youtube.com/watch?v=Gfr50f6ZBvo)..." 
-                      autocomplete="off"
-                      spellcheck="false"
-                    />
-                    <button id="btnLandingClearUrl" class="btn-clear-input hidden" title="Clear">
-                      <i data-lucide="x" class="icon-xs"></i>
-                    </button>
+              <!-- Section 1 & 2: Video Section (Paste Link & Video Player/Metadata) -->
+              <div class="media-video-section" id="mediaVideoSection">
+                <!-- Section 1: Paste Link Ingestion Section -->
+                <div class="workspace-ingest-card">
+                  <div class="ingest-input-row">
+                    <div class="ingest-input-wrap">
+                      <i data-lucide="youtube" class="ingest-yt-icon text-red"></i>
+                      <input 
+                        type="text" 
+                        id="landingUrlInput" 
+                        placeholder="Paste YouTube URL or video ID (e.g. https://www.youtube.com/watch?v=Gfr50f6ZBvo)..." 
+                        autocomplete="off"
+                        spellcheck="false"
+                      />
+                      <button id="btnLandingClearUrl" class="btn-clear-input hidden" title="Clear">
+                        <i data-lucide="x" class="icon-xs"></i>
+                      </button>
+                    </div>
+                    <div class="ingest-buttons-row">
+                      <button id="btnLandingSample" class="btn btn-secondary btn-sm btn-glow-hover" title="Load Demis Hassabis DeepMind Podcast">
+                        <i data-lucide="sparkles" class="icon-xs text-indigo"></i>
+                        <span>Sample Video</span>
+                      </button>
+                      <button id="btnLandingIngest" class="btn btn-primary btn-sm btn-gradient-glow">
+                        <i data-lucide="arrow-right" class="icon-xs"></i>
+                        <span>Ingest Video</span>
+                      </button>
+                    </div>
                   </div>
-                  <div class="ingest-buttons-row">
-                    <button id="btnLandingSample" class="btn btn-secondary btn-sm btn-glow-hover" title="Load Demis Hassabis DeepMind Podcast">
-                      <i data-lucide="sparkles" class="icon-xs text-indigo"></i>
-                      <span>Sample Video</span>
-                    </button>
-                    <button id="btnLandingIngest" class="btn btn-primary btn-sm btn-gradient-glow">
-                      <i data-lucide="arrow-right" class="icon-xs"></i>
-                      <span>Ingest Video</span>
-                    </button>
+
+                  <!-- Ingestion Progress Banner -->
+                  <div id="landingIngestBanner" class="ingest-banner hidden">
+                    <div class="banner-spinner"></div>
+                    <span id="landingBannerText">Extracting transcript segments, timestamp chunking & building FAISS index...</span>
                   </div>
                 </div>
 
-                <!-- Ingestion Progress Banner -->
-                <div id="landingIngestBanner" class="ingest-banner hidden">
-                  <div class="banner-spinner"></div>
-                  <span id="landingBannerText">Extracting transcript segments, timestamp chunking & building FAISS index...</span>
+                <!-- Section 2: Video Player & Metadata -->
+                <div class="workspace-player-card">
+                  <div class="video-card">
+                    <div id="playerPlaceholder" class="video-placeholder">
+                      <div class="placeholder-icon-wrap">
+                        <i data-lucide="youtube" class="placeholder-icon"></i>
+                      </div>
+                      <h4>No Video Loaded</h4>
+                      <p>Paste a YouTube URL above or click <strong>Sample Video</strong> to start grounding.</p>
+                    </div>
+                    <div id="ytPlayerWrap" class="yt-player-container hidden">
+                      <div id="ytPlayer"></div>
+                    </div>
+                  </div>
+
+                  <!-- Video Metadata Card -->
+                  <div id="videoMetaCard" class="video-meta-card hidden">
+                    <div class="meta-title-row">
+                      <h3 id="videoTitle" class="video-heading">Loading Video Title...</h3>
+                      <span id="videoDuration" class="meta-badge duration-badge">00:00</span>
+                    </div>
+                    <div class="meta-stats-row">
+                      <span class="meta-stat"><i data-lucide="user-check" class="icon-xs text-indigo"></i> <span id="videoAuthor">Creator</span></span>
+                      <span class="meta-stat"><i data-lucide="layers" class="icon-xs text-cyan"></i> <span id="videoChunksCount">0</span> Chunks</span>
+                      <span class="meta-stat"><i data-lucide="file-text" class="icon-xs text-emerald"></i> <span id="videoWordsCount">0</span> Words</span>
+                      <button id="btnCopyVideoLink" class="btn-stat-action" title="Copy YouTube Video Link">
+                        <i data-lucide="copy" class="icon-xs"></i>
+                        <span>Copy Link</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <!-- Section 2: Video Player & Metadata -->
-              <div class="workspace-player-card">
-                <div class="video-card">
-                  <div id="playerPlaceholder" class="video-placeholder">
-                    <div class="placeholder-icon-wrap">
-                      <i data-lucide="youtube" class="placeholder-icon"></i>
-                    </div>
-                    <h4>No Video Loaded</h4>
-                    <p>Paste a YouTube URL above or click <strong>Sample Video</strong> to start grounding.</p>
-                  </div>
-                  <div id="ytPlayerWrap" class="yt-player-container hidden">
-                    <div id="ytPlayer"></div>
-                  </div>
-                </div>
-
-                <!-- Video Metadata Card -->
-                <div id="videoMetaCard" class="video-meta-card hidden">
-                  <div class="meta-title-row">
-                    <h3 id="videoTitle" class="video-heading">Loading Video Title...</h3>
-                    <span id="videoDuration" class="meta-badge duration-badge">00:00</span>
-                  </div>
-                  <div class="meta-stats-row">
-                    <span class="meta-stat"><i data-lucide="user-check" class="icon-xs text-indigo"></i> <span id="videoAuthor">Creator</span></span>
-                    <span class="meta-stat"><i data-lucide="layers" class="icon-xs text-cyan"></i> <span id="videoChunksCount">0</span> Chunks</span>
-                    <span class="meta-stat"><i data-lucide="file-text" class="icon-xs text-emerald"></i> <span id="videoWordsCount">0</span> Words</span>
-                    <button id="btnCopyVideoLink" class="btn-stat-action" title="Copy YouTube Video Link">
-                      <i data-lucide="copy" class="icon-xs"></i>
-                      <span>Copy Link</span>
-                    </button>
-                  </div>
+              <!-- Draggable Media Horizontal Splitter (Resize Video vs Summary) -->
+              <div class="media-horizontal-splitter" id="mediaHorizontalSplitter" title="Drag to resize video & summary (Double-click to reset 50/50)">
+                <div class="splitter-horizontal-grip">
+                  <span class="grip-dot"></span>
+                  <span class="grip-dot"></span>
+                  <span class="grip-dot"></span>
                 </div>
               </div>
 
               <!-- Section 3: Summary, Transcript & Benchmarks Tabs -->
-              <div class="workspace-tabs-card">
+              <div class="workspace-tabs-card" id="workspaceTabsCard">
                 <!-- Tabbed Navigation -->
                 <div class="hub-tabs-header">
                   <button class="hub-tab-btn active" data-tab="summaryTab">
@@ -646,7 +658,7 @@
 
   <!-- YouTube IFrame API -->
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="/static/app.js?v=6.2"></script>
+  <script src="/static/app.js?v=6.3"></script>
   <script>
     lucide.createIcons();
   </script>

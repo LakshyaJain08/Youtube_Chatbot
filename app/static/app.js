@@ -32,6 +32,9 @@ const activeWorkspaceView = document.getElementById("activeWorkspaceView");
 const workspaceSplitLayout = document.getElementById("workspaceSplitLayout");
 const workspaceMediaColumn = document.getElementById("workspaceMediaColumn");
 const workspaceSplitter = document.getElementById("workspaceSplitter");
+const mediaVideoSection = document.getElementById("mediaVideoSection");
+const mediaHorizontalSplitter = document.getElementById("mediaHorizontalSplitter");
+const workspaceTabsCard = document.getElementById("workspaceTabsCard");
 const activeSessionHeaderTitle = document.getElementById("activeSessionHeaderTitle");
 const btnToggleVideoHub = document.getElementById("btnToggleVideoHub");
 const hubStatusDot = document.getElementById("hubStatusDot");
@@ -1721,6 +1724,76 @@ function initWorkspaceSplitter() {
   });
 }
 
+// ==========================================================================
+// Draggable Media Horizontal Splitter (Video vs Summary Resizer)
+// ==========================================================================
+let isResizingMediaSplitter = false;
+
+function initMediaHorizontalSplitter() {
+  if (!mediaHorizontalSplitter || !mediaVideoSection || !workspaceMediaColumn) return;
+
+  // Restore user's saved video vs summary height preference
+  try {
+    const savedHeight = localStorage.getItem("yt_copilot_media_video_height");
+    if (savedHeight) {
+      const parsed = parseFloat(savedHeight);
+      if (!isNaN(parsed) && parsed >= 120) {
+        mediaVideoSection.style.flex = `0 0 ${parsed}px`;
+      }
+    }
+  } catch (e) {}
+
+  mediaHorizontalSplitter.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    isResizingMediaSplitter = true;
+    mediaHorizontalSplitter.setPointerCapture(e.pointerId);
+    document.body.classList.add("resizing-vertical");
+    mediaVideoSection.style.transition = "none";
+    if (workspaceTabsCard) workspaceTabsCard.style.transition = "none";
+  });
+
+  mediaHorizontalSplitter.addEventListener("pointermove", (e) => {
+    if (!isResizingMediaSplitter) return;
+    const videoRect = mediaVideoSection.getBoundingClientRect();
+    const colRect = workspaceMediaColumn.getBoundingClientRect();
+    const newHeight = e.clientY - videoRect.top;
+
+    const minHeight = 120;
+    const maxHeight = Math.max(minHeight, colRect.height - 140);
+    const clampedHeight = Math.min(Math.max(newHeight, minHeight), maxHeight);
+
+    mediaVideoSection.style.flex = `0 0 ${clampedHeight}px`;
+  });
+
+  const stopMediaSplitterResize = (e) => {
+    if (!isResizingMediaSplitter) return;
+    isResizingMediaSplitter = false;
+    try {
+      mediaHorizontalSplitter.releasePointerCapture(e.pointerId);
+    } catch (err) {}
+    document.body.classList.remove("resizing-vertical");
+    mediaVideoSection.style.transition = "";
+    if (workspaceTabsCard) workspaceTabsCard.style.transition = "";
+
+    const finalHeight = mediaVideoSection.getBoundingClientRect().height;
+    try {
+      localStorage.setItem("yt_copilot_media_video_height", finalHeight.toString());
+    } catch (err) {}
+  };
+
+  mediaHorizontalSplitter.addEventListener("pointerup", stopMediaSplitterResize);
+  mediaHorizontalSplitter.addEventListener("pointercancel", stopMediaSplitterResize);
+
+  // Double-click to reset back to default 50 / 50 split
+  mediaHorizontalSplitter.addEventListener("dblclick", () => {
+    mediaVideoSection.style.flex = "0 0 50%";
+    try {
+      localStorage.removeItem("yt_copilot_media_video_height");
+    } catch (e) {}
+    showToast("Video & summary split reset to 50 / 50", "info");
+  });
+}
+
 // Gemini Sidebar Segmented Switcher & Nav Handlers
 const segTabChat = document.getElementById("segTabChat");
 const segTabVideoHub = document.getElementById("segTabVideoHub");
@@ -2247,6 +2320,7 @@ function initApp() {
 
   // Initialize draggable pane resizer
   initWorkspaceSplitter();
+  initMediaHorizontalSplitter();
 
   // Initialize in-website theme tooltips (replaces native OS system tooltips)
   initGlobalTooltips();

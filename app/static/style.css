@@ -1111,14 +1111,12 @@ svg.lucide.session-pinned-icon {
   min-width: 320px;
   max-width: calc(100% - 360px);
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 14px 18px 20px 18px;
+  gap: 0;
+  padding: 14px 18px 14px 18px;
   background: #141416;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 
 /* ==========================================================================
@@ -1351,6 +1349,38 @@ body.resizing-horizontal input {
   to { transform: rotate(360deg); }
 }
 
+/* Section 1 & 2: Media Video Section (Player, Metadata & Ingestion) */
+.media-video-section {
+  flex: 0 0 50%;
+  min-height: 120px;
+  max-height: calc(100% - 130px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+
+.media-video-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.media-video-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.media-video-section::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+.media-video-section::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 /* Section 2: Player Card & Metadata */
 .workspace-player-card {
   display: flex;
@@ -1376,6 +1406,88 @@ body.resizing-horizontal input {
   color: var(--yt-red);
 }
 
+/* ==========================================================================
+   Draggable Media Horizontal Splitter (Video vs Summary Resizer)
+   ========================================================================== */
+.media-horizontal-splitter {
+  width: 100%;
+  height: 10px;
+  background: #111113;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: row-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 25;
+  user-select: none;
+  touch-action: none;
+  margin: 6px 0;
+  border-radius: 4px;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Expanded hit target for effortless vertical cursor grabbing */
+.media-horizontal-splitter::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -6px;
+  bottom: -6px;
+  z-index: 1;
+}
+
+.media-horizontal-splitter:hover,
+body.resizing-vertical .media-horizontal-splitter {
+  background: rgba(255, 0, 51, 0.18);
+  box-shadow: inset 0 0 10px rgba(255, 0, 51, 0.35);
+}
+
+.splitter-horizontal-grip {
+  height: 4px;
+  width: 42px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 9999px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.media-horizontal-splitter:hover .splitter-horizontal-grip,
+body.resizing-vertical .media-horizontal-splitter .splitter-horizontal-grip {
+  background: var(--yt-red);
+  width: 58px;
+  box-shadow: 0 0 12px rgba(255, 0, 51, 0.85), 0 0 20px rgba(255, 0, 51, 0.4);
+}
+
+.media-horizontal-splitter:hover .grip-dot,
+body.resizing-vertical .media-horizontal-splitter .grip-dot {
+  opacity: 1;
+}
+
+/* Vertical Resizing Active Body State */
+body.resizing-vertical {
+  user-select: none !important;
+  cursor: row-resize !important;
+}
+
+body.resizing-vertical * {
+  cursor: row-resize !important;
+}
+
+body.resizing-vertical iframe,
+body.resizing-vertical textarea,
+body.resizing-vertical input {
+  pointer-events: none !important;
+}
+
 /* Section 3: Tabs Card (Summary, Transcript, Benchmarks) */
 .workspace-tabs-card {
   background: var(--bg-card);
@@ -1384,8 +1496,8 @@ body.resizing-horizontal input {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 320px;
+  flex: 1 1 0%;
+  min-height: 120px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -2552,8 +2664,25 @@ body.resizing-horizontal input {
     min-width: 0;
     max-width: none;
     height: auto;
+    overflow: visible;
     border-right: none;
     border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .media-video-section {
+    flex: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible;
+  }
+
+  .media-horizontal-splitter {
+    display: none !important;
+  }
+
+  .workspace-tabs-card {
+    flex: none;
+    height: 480px;
   }
 
   .chat-agent-column {
