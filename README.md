@@ -1,4 +1,4 @@
-# YouTube AI Copilot 2.0 🚀
+# Youtube Chatbot 2.0 🚀
 > **Production-Grade LLM Video Chatbot with Staged Hybrid RAG, Gemini 2.5 Flash, Timestamp Citations & Browser Extension.**
 
 ---

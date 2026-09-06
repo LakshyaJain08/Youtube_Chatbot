@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "YouTube AI Copilot",
+  "name": "Youtube Chatbot",
   "version": "2.0.0",
   "description": "Chat with any YouTube video using Staged Hybrid RAG, Gemini 2.5 Flash & interactive timestamp citations.",
   "permissions": [
@@ -16,7 +16,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "YouTube AI Copilot",
+    "default_title": "Youtube Chatbot",
     "default_icon": {
       "16": "icons/icon-16.png",
       "48": "icons/icon-48.png",

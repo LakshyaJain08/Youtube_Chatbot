@@ -1,5 +1,5 @@
 /**
- * YouTube AI Copilot - Content Script
+ * Youtube Chatbot - Content Script
  * Listens for video control commands (e.g. seeking timestamps) and injects quick overlay.
  */
 
@@ -24,7 +24,7 @@ function injectFloatingCopilotBadge() {
 
   const badge = document.createElement("div");
   badge.id = "yt-copilot-badge";
-  badge.innerHTML = "⚡ AI Copilot Ready";
+  badge.innerHTML = "⚡ Chatbot Ready";
   badge.style.cssText = `
     position: fixed;
     bottom: 24px;
@@ -53,7 +53,7 @@ function injectFloatingCopilotBadge() {
   });
 
   badge.addEventListener("click", () => {
-    alert("Click the YouTube AI Copilot extension icon in your browser toolbar to chat with this video!");
+    alert("Click the Youtube Chatbot extension icon in your browser toolbar to chat with this video!");
   });
 
   document.body.appendChild(badge);

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   YouTube AI Copilot 2.0 - Agent Style (ChatGPT & Gemini Design System)
+   YouTube Chatbot 2.0 - Agent Style (ChatGPT & Gemini Design System)
    Dark Foundation, Signature YouTube Red & Crisp White Accents, Collapsible Sidebar,
    Multi-Chat Sessions, Responsive Insights Drawer, and Glassmorphic Micro-Animations.
    ========================================================================== */
@@ -1367,7 +1367,7 @@ body.resizing-horizontal input {
 }
 
 /* --------------------------------------------------------------------------
-   Right Column: Interactive AI Video Copilot Chat
+   Right Column: Interactive YouTube Chatbot Chat
    -------------------------------------------------------------------------- */
 .chat-agent-column {
   flex: 1;

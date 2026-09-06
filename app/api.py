@@ -37,7 +37,7 @@ config = get_config()
 app = FastAPI(
     title=config.app.name,
     version=config.app.version,
-    description="Production-Grade YouTube AI Copilot with Staged Hybrid Retrieval, Citations & Ragas Evaluation.",
+    description="Production-Grade YouTube Chatbot with Staged Hybrid Retrieval, Citations & Ragas Evaluation.",
 )
 
 # Enable CORS for browser extensions and local frontends

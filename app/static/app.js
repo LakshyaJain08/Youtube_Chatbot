@@ -1,5 +1,6 @@
 /**
- * YouTube AI Copilot 2.0 - Agent Controller (ChatGPT / Gemini Architecture)
+ * YouTube Chatbot 2.0 - Agent Controller (ChatGPT / Gemini Architecture)
+ * Full state management, staged hybrid RAG interaction, dynamic UI sync.
  * Multi-chat Session Engine, Collapsible Sidebar, 3-Dots Context Actions (Rename, Share, Pin, Delete),
  * Zero-State Home Landing View, Collapsible Video Drawer, and Timestamp Grounding.
  */
@@ -491,7 +492,7 @@ function shareChatSession(sessionId) {
 
   if (session.history && session.history.length) {
     for (const turn of session.history) {
-      const role = turn.role === "user" ? "### 👤 User" : "### 🤖 AI Copilot";
+      const role = turn.role === "user" ? "### 👤 User" : "### 🤖 YouTube Chatbot";
       md += `${role}\n${turn.content}\n\n`;
     }
   } else {
@@ -672,7 +673,7 @@ function showOpeningPage() {
   if (landingHomeView) landingHomeView.classList.remove("hidden");
   if (activeWorkspaceView) activeWorkspaceView.classList.add("hidden");
   if (btnToggleVideoHub) btnToggleVideoHub.classList.add("hidden");
-  if (activeSessionHeaderTitle) activeSessionHeaderTitle.textContent = "YouTube AI Copilot";
+  if (activeSessionHeaderTitle) activeSessionHeaderTitle.textContent = "YouTube Chatbot";
   if (btnNavHome) btnNavHome.classList.add("active");
   renderSidebarSessions();
   lucide.createIcons();
@@ -693,7 +694,7 @@ function renderActiveWorkspace() {
   if (activeWorkspaceView) activeWorkspaceView.classList.remove("hidden");
   if (btnToggleVideoHub) btnToggleVideoHub.classList.remove("hidden");
   if (btnNavHome) btnNavHome.classList.remove("active");
-  activeSessionHeaderTitle.textContent = activeSession.title || "YouTube AI Copilot";
+  activeSessionHeaderTitle.textContent = activeSession.title || "YouTube Chatbot";
 
   // Section 1: Ingest URL Input Bar
   if (landingUrlInput) {
@@ -2199,7 +2200,7 @@ function initApp() {
   if (isAppInitialized) return;
   isAppInitialized = true;
 
-  console.log("Initializing YouTube AI Copilot Agent...");
+  console.log("Initializing YouTube Chatbot Agent...");
   loadSessionsFromStorage();
 
   // Load saved sidebar & drawer preferences

@@ -15,7 +15,7 @@ load_dotenv()
 
 
 class AppConfig(BaseModel):
-    name: str = "YouTube AI Copilot"
+    name: str = "Youtube Chatbot"
     version: str = "2.0.0"
     host: str = "127.0.0.1"
     port: int = 8000
