@@ -2616,3 +2616,47 @@ body.resizing-horizontal input {
   box-shadow: 0 4px 14px rgba(239, 68, 68, 0.55);
   transform: translateY(-1px);
 }
+
+/* ==========================================================================
+   Global In-Website Theme Tooltip (Replacing Native OS Tooltips)
+   ========================================================================== */
+.app-tooltip {
+  position: fixed;
+  z-index: 99999;
+  pointer-events: none;
+  background: rgba(18, 18, 22, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #f1f2f4;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.14s ease, transform 0.14s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+  display: none;
+}
+
+.app-tooltip.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.app-tooltip .tooltip-kbd {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.68rem;
+  font-family: var(--font-mono, monospace);
+  color: #cbd5e1;
+  margin-left: 6px;
+}

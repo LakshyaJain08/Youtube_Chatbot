@@ -2030,6 +2030,167 @@ function escapeRegex(str) {
 }
 
 // ==========================================================================
+// In-Website Theme-Matched Tooltip System (Replaces Native OS Tooltips)
+// ==========================================================================
+let tooltipHoverTimer = null;
+let currentTooltipTarget = null;
+
+function initGlobalTooltips() {
+  const globalTooltip = document.getElementById("appGlobalTooltip");
+  if (!globalTooltip) return;
+
+  function convertTitles(root) {
+    if (!root) return;
+    if (root.querySelectorAll) {
+      root.querySelectorAll("[title]").forEach((el) => {
+        const text = el.getAttribute("title");
+        if (text && text.trim()) {
+          el.setAttribute("data-tooltip", text.trim());
+        }
+        el.removeAttribute("title");
+      });
+    }
+    if (root.hasAttribute && root.hasAttribute("title")) {
+      const text = root.getAttribute("title");
+      if (text && text.trim()) {
+        root.setAttribute("data-tooltip", text.trim());
+      }
+      root.removeAttribute("title");
+    }
+  }
+
+  // Initial conversion of all title attributes
+  convertTitles(document);
+
+  // Intercept dynamically added elements & attribute changes
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.type === "childList") {
+        m.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            convertTitles(node);
+          }
+        });
+      } else if (m.type === "attributes" && m.attributeName === "title") {
+        const target = m.target;
+        if (target && target.getAttribute) {
+          const text = target.getAttribute("title");
+          if (text && text.trim()) {
+            target.setAttribute("data-tooltip", text.trim());
+            target.removeAttribute("title");
+          }
+        }
+      }
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["title"],
+  });
+
+  // Event delegation on mouseover and focusin
+  function handleTooltipTrigger(e) {
+    const target = e.target.closest("[data-tooltip], [title]");
+    if (!target) return;
+
+    if (target.hasAttribute("title")) {
+      const text = target.getAttribute("title");
+      if (text && text.trim()) {
+        target.setAttribute("data-tooltip", text.trim());
+      }
+      target.removeAttribute("title");
+    }
+
+    const tipText = target.getAttribute("data-tooltip");
+    if (!tipText || !tipText.trim()) return;
+
+    if (currentTooltipTarget === target) return;
+    currentTooltipTarget = target;
+
+    if (tooltipHoverTimer) clearTimeout(tooltipHoverTimer);
+    tooltipHoverTimer = setTimeout(() => {
+      showCustomTooltip(target, tipText);
+    }, 150); // Fast, snappy 150ms delay
+  }
+
+  document.addEventListener("mouseover", handleTooltipTrigger);
+  document.addEventListener("focusin", handleTooltipTrigger);
+
+  document.addEventListener("mouseout", (e) => {
+    const target = e.target.closest("[data-tooltip]");
+    if (target && target === currentTooltipTarget) {
+      hideCustomTooltip();
+    }
+  });
+  document.addEventListener("focusout", hideCustomTooltip);
+
+  // Instantly hide on interaction
+  window.addEventListener("scroll", hideCustomTooltip, { passive: true });
+  document.addEventListener("pointerdown", hideCustomTooltip);
+}
+
+function showCustomTooltip(target, text) {
+  const globalTooltip = document.getElementById("appGlobalTooltip");
+  if (!globalTooltip || !document.contains(target)) return;
+
+  // Format any keyboard shortcuts like (Ctrl+K)
+  const kbdMatch = text.match(/\((Ctrl\+[A-Za-z0-9+]+|Shift\+[A-Za-z0-9+]+)\)/);
+  if (kbdMatch) {
+    const baseText = text.replace(kbdMatch[0], "").trim();
+    const shortcut = kbdMatch[1];
+    globalTooltip.innerHTML = `${escapeHtml(baseText)}<span class="tooltip-kbd">${escapeHtml(shortcut)}</span>`;
+  } else {
+    globalTooltip.textContent = text;
+  }
+
+  globalTooltip.style.display = "block";
+  globalTooltip.classList.remove("visible");
+
+  const rect = target.getBoundingClientRect();
+  const tipRect = globalTooltip.getBoundingClientRect();
+
+  const gap = 8;
+  const padding = 12;
+
+  // Default: place below
+  let top = rect.bottom + gap;
+  let left = rect.left + (rect.width - tipRect.width) / 2;
+
+  // If too close to bottom edge of viewport, place above
+  if (top + tipRect.height > window.innerHeight - padding) {
+    top = rect.top - tipRect.height - gap;
+  }
+
+  // Keep within left/right edges
+  if (left < padding) left = padding;
+  if (left + tipRect.width > window.innerWidth - padding) {
+    left = window.innerWidth - tipRect.width - padding;
+  }
+
+  globalTooltip.style.top = `${Math.round(top)}px`;
+  globalTooltip.style.left = `${Math.round(left)}px`;
+
+  requestAnimationFrame(() => {
+    globalTooltip.classList.add("visible");
+  });
+}
+
+function hideCustomTooltip() {
+  if (tooltipHoverTimer) {
+    clearTimeout(tooltipHoverTimer);
+    tooltipHoverTimer = null;
+  }
+  currentTooltipTarget = null;
+  const globalTooltip = document.getElementById("appGlobalTooltip");
+  if (globalTooltip) {
+    globalTooltip.classList.remove("visible");
+  }
+}
+
+// ==========================================================================
 // App Initialization
 // ==========================================================================
 let isAppInitialized = false;
@@ -2054,6 +2215,9 @@ function initApp() {
 
   // Initialize draggable pane resizer
   initWorkspaceSplitter();
+
+  // Initialize in-website theme tooltips (replaces native OS system tooltips)
+  initGlobalTooltips();
 
   renderSidebarSessions();
   showOpeningPage();
