@@ -120,6 +120,14 @@ Phase 8: Hardening & Automated Testing
   - `Dockerfile`: Multi-stage, security-hardened container specification with non-root user execution.
   - Git hygiene: Continuous version control synchronization with clear commit semantics.
 
+#### Phase 9: Interactive Demo Notebook & Performance Benchmarking
+- **Objective**: Deliver a self-contained, reproducible Jupyter demonstration and evaluation suite.
+- **Deliverables**:
+  - `01_YouTube_Chatbot_System_Demo.ipynb`: 10-module end-to-end interactive notebook demonstrating subtitle extraction, dual indexing, hybrid RRF retrieval, live web search fallback, and quantitative RAG Triad benchmarking.
+  - `notebooks/01_YouTube_Chatbot_System_Demo.ipynb`: Standalone copy organized in the `notebooks/` directory.
+  - `run_demo_notebook.py`: Headless batch execution script utilizing the custom `youtube-chatbot-venv` kernel.
+  - Visual Analytics Dashboard: Embedded Matplotlib and Seaborn figures (RAG Triad Radar, Archetype Performance, Latency Breakdown, Knowledge Density Timeline Map).
+
 ---
 
 ### 4. Quality Assurance and Testing Strategy
