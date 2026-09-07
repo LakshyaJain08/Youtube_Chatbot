@@ -14,7 +14,7 @@
   <div class="popup-container">
     <header class="popup-header">
       <div class="brand">
-        <div class="brand-logo" title="YouTube Chatbot">
+        <div class="brand-logo" data-tooltip="YouTube Chatbot">
           <div class="logo-core">
             <svg class="logo-play-icon" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
               <polygon points="5 3 19 12 5 21 5 3"/>
@@ -33,7 +33,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <button id="btnExtClose" class="btn-icon-header btn-icon-close" title="Close & Wipe History" aria-label="Close Extension">
+        <button id="btnExtClose" class="btn-icon-header btn-icon-close" data-tooltip="Close &amp; Wipe History" aria-label="Close Extension">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -45,8 +45,8 @@
     <!-- Ingest Section -->
     <section class="video-info-box" id="videoInfoBox">
       <div class="video-title" id="extVideoTitle">No YouTube video detected</div>
-      <button id="btnExtIngest" class="btn btn-primary" disabled>
-        Ingest & Analyze Video
+      <button id="btnExtIngest" class="btn btn-primary" disabled data-tooltip="Ingest &amp; analyze video transcript">
+        Ingest &amp; Analyze Video
       </button>
     </section>
 
@@ -59,15 +59,15 @@
 
     <!-- Quick Chips -->
     <div class="quick-chips" id="extQuickChips">
-      <button class="chip" data-q="Summarize this video in 3 key takeaways with timestamps.">Summary</button>
-      <button class="chip" data-q="What are the key technical concepts explained?">Key Concepts</button>
-      <button class="chip" data-q="Generate a 3-question quiz on this video.">Quiz</button>
+      <button class="chip" data-q="Summarize this video in 3 key takeaways with timestamps." data-tooltip="Generate a 3-takeaway summary with timestamps">Summary</button>
+      <button class="chip" data-q="What are the key technical concepts explained?" data-tooltip="Extract core concepts explained in this video">Key Concepts</button>
+      <button class="chip" data-q="Generate a 3-question quiz on this video." data-tooltip="Test your knowledge with an interactive 3-question quiz">Quiz</button>
     </div>
 
     <!-- Input Footer -->
     <form class="chat-input-bar" id="extChatForm">
       <input type="text" id="extChatInput" placeholder="Ask a question about this video..." disabled autocomplete="off" />
-      <button type="button" id="btnExtWebSearchToggle" class="btn-web-toggle" title="Toggle DuckDuckGo Web Search mode">
+      <button type="button" id="btnExtWebSearchToggle" class="btn-web-toggle" data-tooltip="Toggle DuckDuckGo Web Search mode">
         <svg class="icon-globe" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
           <line x1="2" y1="12" x2="22" y2="12"></line>
@@ -76,7 +76,7 @@
         <span class="toggle-text">Web Search</span>
         <span class="toggle-switch-track"><span class="toggle-switch-thumb"></span></span>
       </button>
-      <button type="submit" id="btnExtSend" class="btn-send" disabled aria-label="Send">
+      <button type="submit" id="btnExtSend" class="btn-send" disabled aria-label="Send" data-tooltip="Send message (Enter)">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="22" y1="2" x2="11" y2="13"></line>
           <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -84,6 +84,9 @@
       </button>
     </form>
   </div>
+
+  <!-- Global Theme Tooltip (replaces native OS tooltip) -->
+  <div id="appGlobalTooltip" class="app-tooltip" role="tooltip" aria-hidden="true"></div>
 
   <script src="popup.js"></script>
 </body>

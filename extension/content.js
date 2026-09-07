@@ -219,6 +219,33 @@ function injectResizeStyles() {
       left: 50%;
       transform: translateX(-50%);
     }
+    .yt-chatbot-tooltip {
+      position: fixed;
+      z-index: 2147483647;
+      pointer-events: none;
+      background: rgba(18, 18, 22, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      color: #f1f2f4;
+      padding: 5px 9px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 500;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.25;
+      letter-spacing: -0.1px;
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 0, 51, 0.18);
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.14s ease, transform 0.14s cubic-bezier(0.4, 0, 0.2, 1);
+      display: none;
+    }
+    .yt-chatbot-tooltip.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
   `;
   (document.head || document.documentElement).appendChild(style);
 }
@@ -285,12 +312,12 @@ function initFloatingWindow() {
       <svg width="12" height="12" viewBox="0 0 24 24" fill="#ff0033"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       <span style="color: #ffffff; letter-spacing: -0.2px;">YouTube Chatbot</span>
     </div>
-    <div class="yt-drag-pill-indicator" title="Drag anywhere on this bar to freely move window" style="width: 44px; height: 4px; background: rgba(255, 255, 255, 0.28); border-radius: 99px; cursor: grab; transition: background 0.2s, width 0.2s;"></div>
+    <div class="yt-drag-pill-indicator" data-tooltip="Drag anywhere on this bar to freely move window" style="width: 44px; height: 4px; background: rgba(255, 255, 255, 0.28); border-radius: 99px; cursor: grab; transition: background 0.2s, width 0.2s;"></div>
     <div style="display: flex; align-items: center; gap: 6px;">
-      <button id="btnYtChatbotResetPos" title="Reset window size and position (or double-click bar)" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); color: #888888; cursor: pointer; padding: 4px 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: color 0.15s, background 0.15s, border-color 0.15s;">
+      <button id="btnYtChatbotResetPos" data-tooltip="Reset window size and position (or double-click bar)" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); color: #888888; cursor: pointer; padding: 4px 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: color 0.15s, background 0.15s, border-color 0.15s;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
       </button>
-      <button id="btnYtChatbotCloseWin" title="Close Window & Wipe History" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); color: #aaaaaa; cursor: pointer; padding: 4px 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; transition: color 0.15s, background 0.15s, border-color 0.15s;">
+      <button id="btnYtChatbotCloseWin" data-tooltip="Close Window & Wipe History" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); color: #aaaaaa; cursor: pointer; padding: 4px 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; transition: color 0.15s, background 0.15s, border-color 0.15s;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
@@ -336,6 +363,9 @@ function initFloatingWindow() {
 
   // Setup 8-Directional Resizing
   setupResizable(windowElement);
+
+  // Setup In-Window Custom Theme Tooltips (replaces native OS system tooltips)
+  setupWindowTooltips(windowElement);
 
   // Drag pill hover micro-interaction
   dragBar.addEventListener("mouseenter", () => {
@@ -424,7 +454,7 @@ function setupResizable(targetElement) {
   directions.forEach(({ dir, cursor, html }) => {
     const handle = document.createElement("div");
     handle.className = `yt-chatbot-resize-handle yt-chatbot-resize-${dir}`;
-    handle.title = `Resize window (${dir.toUpperCase()})`;
+    handle.setAttribute("data-tooltip", `Resize window (${dir.toUpperCase()})`);
     if (html) handle.innerHTML = html;
 
     if (dir === "se") {
@@ -441,6 +471,7 @@ function setupResizable(targetElement) {
     handle.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       e.stopPropagation();
+      hideFloatingTooltip();
 
       try {
         handle.setPointerCapture(e.pointerId);
@@ -537,6 +568,7 @@ function setupDraggable(dragHandle, targetElement) {
   dragHandle.addEventListener("pointerdown", (e) => {
     if (e.target.closest("button") || e.target.closest(".yt-chatbot-resize-handle")) return;
     e.preventDefault();
+    hideFloatingTooltip();
 
     try {
       dragHandle.setPointerCapture(e.pointerId);
@@ -687,10 +719,126 @@ function openWindow() {
 function closeWindow() {
   if (!windowElement) return;
 
+  hideFloatingTooltip();
   windowElement.style.opacity = "0";
   windowElement.style.pointerEvents = "none";
   windowElement.style.transform = "scale(0.96) translateY(10px)";
   isWindowOpen = false;
+}
+
+// ==========================================================================
+// Custom Theme Tooltip Controller for In-Page Floating Window
+// ==========================================================================
+let currentFloatingTooltipTarget = null;
+let floatingTooltipHoverTimer = null;
+let floatingTooltipEl = null;
+
+function hideFloatingTooltip() {
+  if (floatingTooltipHoverTimer) {
+    clearTimeout(floatingTooltipHoverTimer);
+    floatingTooltipHoverTimer = null;
+  }
+  currentFloatingTooltipTarget = null;
+  if (floatingTooltipEl) {
+    floatingTooltipEl.classList.remove("visible");
+    floatingTooltipEl.style.display = "none";
+  }
+}
+
+function showFloatingTooltip(target, text) {
+  if (!floatingTooltipEl) {
+    floatingTooltipEl = document.getElementById("yt-chatbot-tooltip");
+    if (!floatingTooltipEl) {
+      floatingTooltipEl = document.createElement("div");
+      floatingTooltipEl.id = "yt-chatbot-tooltip";
+      floatingTooltipEl.className = "yt-chatbot-tooltip";
+      floatingTooltipEl.setAttribute("role", "tooltip");
+      document.body.appendChild(floatingTooltipEl);
+    }
+  }
+
+  floatingTooltipEl.textContent = text;
+  floatingTooltipEl.style.display = "block";
+  floatingTooltipEl.classList.remove("visible");
+
+  const rect = target.getBoundingClientRect();
+  const tipRect = floatingTooltipEl.getBoundingClientRect();
+
+  const gap = 6;
+  const padding = 10;
+
+  // Place above or below target depending on available space
+  let top = rect.bottom + gap;
+  let left = rect.left + (rect.width - tipRect.width) / 2;
+
+  if (top + tipRect.height > window.innerHeight - padding) {
+    top = rect.top - tipRect.height - gap;
+  }
+  if (top < padding) {
+    top = rect.bottom + gap;
+  }
+
+  // Horizontal viewport clamp
+  if (left < padding) left = padding;
+  if (left + tipRect.width > window.innerWidth - padding) {
+    left = window.innerWidth - tipRect.width - padding;
+  }
+
+  floatingTooltipEl.style.top = `${Math.round(top)}px`;
+  floatingTooltipEl.style.left = `${Math.round(left)}px`;
+
+  requestAnimationFrame(() => {
+    floatingTooltipEl.classList.add("visible");
+  });
+}
+
+function setupWindowTooltips(container) {
+  if (!container) return;
+
+  if (!floatingTooltipEl) {
+    floatingTooltipEl = document.getElementById("yt-chatbot-tooltip");
+    if (!floatingTooltipEl) {
+      floatingTooltipEl = document.createElement("div");
+      floatingTooltipEl.id = "yt-chatbot-tooltip";
+      floatingTooltipEl.className = "yt-chatbot-tooltip";
+      floatingTooltipEl.setAttribute("role", "tooltip");
+      document.body.appendChild(floatingTooltipEl);
+    }
+  }
+
+  // Convert existing titles to data-tooltip to suppress native OS tooltips
+  container.querySelectorAll("[title]").forEach((el) => {
+    const text = el.getAttribute("title");
+    if (text && text.trim()) {
+      el.setAttribute("data-tooltip", text.trim());
+    }
+    el.removeAttribute("title");
+  });
+
+  container.addEventListener("mouseover", (e) => {
+    const target = e.target.closest("[data-tooltip]");
+    if (!target || !container.contains(target)) return;
+
+    const text = target.getAttribute("data-tooltip");
+    if (!text || !text.trim()) return;
+
+    if (currentFloatingTooltipTarget === target) return;
+    currentFloatingTooltipTarget = target;
+
+    if (floatingTooltipHoverTimer) clearTimeout(floatingTooltipHoverTimer);
+    floatingTooltipHoverTimer = setTimeout(() => {
+      showFloatingTooltip(target, text.trim());
+    }, 120);
+  });
+
+  container.addEventListener("mouseout", (e) => {
+    const target = e.target.closest("[data-tooltip]");
+    if (target && target === currentFloatingTooltipTarget) {
+      hideFloatingTooltip();
+    }
+  });
+
+  container.addEventListener("pointerdown", hideFloatingTooltip);
 }
 
 // Clamp floating window if browser viewport shrinks

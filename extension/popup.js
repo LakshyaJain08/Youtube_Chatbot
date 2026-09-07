@@ -25,6 +25,9 @@ const btnExtWebSearchToggle = document.getElementById("btnExtWebSearchToggle");
 
 // Initialize on popup load
 document.addEventListener("DOMContentLoaded", async () => {
+  // Initialize in-extension theme tooltips (replaces native OS system tooltips)
+  initGlobalTooltips();
+
   // Load saved web search mode preference
   try {
     const saved = await chrome.storage.local.get(["yt_ext_web_search_enabled"]);
@@ -32,7 +35,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       isWebSearchEnabled = true;
       if (btnExtWebSearchToggle) {
         btnExtWebSearchToggle.classList.add("active");
-        btnExtWebSearchToggle.setAttribute("title", "Web Search Mode is ON (will search DuckDuckGo if query is not in video)");
+        btnExtWebSearchToggle.setAttribute("data-tooltip", "Web Search Mode is ON (will search DuckDuckGo if query is not in video)");
+        btnExtWebSearchToggle.removeAttribute("title");
       }
     }
   } catch (_) {}
@@ -43,11 +47,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       isWebSearchEnabled = !isWebSearchEnabled;
       btnExtWebSearchToggle.classList.toggle("active", isWebSearchEnabled);
       btnExtWebSearchToggle.setAttribute(
-        "title",
+        "data-tooltip",
         isWebSearchEnabled
           ? "Web Search Mode is ON (will search DuckDuckGo if query is not in video)"
           : "Web Search Mode is OFF (click to enable)"
       );
+      btnExtWebSearchToggle.removeAttribute("title");
       try {
         await chrome.storage.local.set({ yt_ext_web_search_enabled: isWebSearchEnabled });
       } catch (_) {}
@@ -429,7 +434,7 @@ function formatMarkdownAndCitations(rawText) {
   text = text.replace(/\[(\d{1,2}:\d{2}(?::\d{2})?)(?:\s*-\s*(\d{1,2}:\d{2}(?::\d{2})?))?\]/g, (match, startTs, endTs) => {
     const sec = parseTs(startTs);
     const label = endTs ? `${startTs} - ${endTs}` : startTs;
-    return `<button class="ts-tag" data-sec="${sec}" title="Seek to ${startTs}"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> [${label}]</button>`;
+    return `<button class="ts-tag" data-sec="${sec}" data-tooltip="Seek to ${startTs}"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> [${label}]</button>`;
   });
 
   // Replace [SEARCH_WEB_OPTION:...] with interactive Web Search action card
@@ -443,7 +448,7 @@ function formatMarkdownAndCitations(rawText) {
           </svg>
           <span>Need external web grounding? You can search live DuckDuckGo for this topic.</span>
         </div>
-        <button type="button" class="btn-trigger-websearch" data-query="${escapeHtml(rawQ)}">
+        <button type="button" class="btn-trigger-websearch" data-query="${escapeHtml(rawQ)}" data-tooltip="Search DuckDuckGo web results">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <span>Search the Web with DuckDuckGo</span>
         </button>
@@ -528,7 +533,8 @@ function attachWebSearchClicks(parent) {
         isWebSearchEnabled = true;
         if (btnExtWebSearchToggle) {
           btnExtWebSearchToggle.classList.add("active");
-          btnExtWebSearchToggle.setAttribute("title", "Web Search Mode is ON (will search DuckDuckGo if query is not in video)");
+          btnExtWebSearchToggle.setAttribute("data-tooltip", "Web Search Mode is ON (will search DuckDuckGo if query is not in video)");
+          btnExtWebSearchToggle.removeAttribute("title");
         }
         try {
           await chrome.storage.local.set({ yt_ext_web_search_enabled: true });
@@ -605,3 +611,170 @@ function parseTs(ts) {
   }
   return 0;
 }
+
+// ==========================================================================
+// Custom Theme Tooltip Engine (Matching Web App Design System)
+// ==========================================================================
+let currentTooltipTarget = null;
+let tooltipHoverTimer = null;
+
+function initGlobalTooltips() {
+  let globalTooltip = document.getElementById("appGlobalTooltip");
+  if (!globalTooltip) {
+    globalTooltip = document.createElement("div");
+    globalTooltip.id = "appGlobalTooltip";
+    globalTooltip.className = "app-tooltip";
+    globalTooltip.setAttribute("role", "tooltip");
+    globalTooltip.setAttribute("aria-hidden", "true");
+    document.body.appendChild(globalTooltip);
+  }
+
+  function convertTitles(root) {
+    if (!root) return;
+    if (root.querySelectorAll) {
+      root.querySelectorAll("[title]").forEach((el) => {
+        const text = el.getAttribute("title");
+        if (text && text.trim()) {
+          el.setAttribute("data-tooltip", text.trim());
+        }
+        el.removeAttribute("title");
+      });
+    }
+    if (root.hasAttribute && root.hasAttribute("title")) {
+      const text = root.getAttribute("title");
+      if (text && text.trim()) {
+        root.setAttribute("data-tooltip", text.trim());
+      }
+      root.removeAttribute("title");
+    }
+  }
+
+  // Initial conversion of all title attributes
+  convertTitles(document);
+
+  // MutationObserver to convert dynamically added elements (like chat messages, timestamp chips)
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          convertTitles(node);
+        }
+      }
+      if (mutation.type === "attributes" && mutation.attributeName === "title") {
+        const target = mutation.target;
+        if (target && target.hasAttribute && target.hasAttribute("title")) {
+          const text = target.getAttribute("title");
+          if (text && text.trim()) {
+            target.setAttribute("data-tooltip", text.trim());
+          }
+          target.removeAttribute("title");
+        }
+      }
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["title"],
+  });
+
+  function handleTooltipTrigger(e) {
+    const target = e.target.closest("[data-tooltip], [title]");
+    if (!target) return;
+
+    if (target.hasAttribute("title")) {
+      const text = target.getAttribute("title");
+      if (text && text.trim()) {
+        target.setAttribute("data-tooltip", text.trim());
+      }
+      target.removeAttribute("title");
+    }
+
+    const tipText = target.getAttribute("data-tooltip");
+    if (!tipText || !tipText.trim()) return;
+
+    if (currentTooltipTarget === target) return;
+    currentTooltipTarget = target;
+
+    if (tooltipHoverTimer) clearTimeout(tooltipHoverTimer);
+    tooltipHoverTimer = setTimeout(() => {
+      showCustomTooltip(target, tipText);
+    }, 120);
+  }
+
+  document.addEventListener("mouseover", handleTooltipTrigger);
+  document.addEventListener("focusin", handleTooltipTrigger);
+
+  document.addEventListener("mouseout", (e) => {
+    const target = e.target.closest("[data-tooltip]");
+    if (target && target === currentTooltipTarget) {
+      hideCustomTooltip();
+    }
+  });
+  document.addEventListener("focusout", hideCustomTooltip);
+
+  window.addEventListener("scroll", hideCustomTooltip, { passive: true });
+  document.addEventListener("pointerdown", hideCustomTooltip);
+}
+
+function showCustomTooltip(target, text) {
+  const globalTooltip = document.getElementById("appGlobalTooltip");
+  if (!globalTooltip || !document.contains(target)) return;
+
+  const kbdMatch = text.match(/\((Ctrl\+[A-Za-z0-9+]+|Shift\+[A-Za-z0-9+]+|Enter)\)/);
+  if (kbdMatch) {
+    const baseText = text.replace(kbdMatch[0], "").trim();
+    const shortcut = kbdMatch[1];
+    globalTooltip.innerHTML = `${escapeHtml(baseText)}<span class="tooltip-kbd">${escapeHtml(shortcut)}</span>`;
+  } else {
+    globalTooltip.textContent = text;
+  }
+
+  globalTooltip.style.display = "block";
+  globalTooltip.classList.remove("visible");
+
+  const rect = target.getBoundingClientRect();
+  const tipRect = globalTooltip.getBoundingClientRect();
+
+  const gap = 6;
+  const padding = 8;
+
+  let top = rect.bottom + gap;
+  let left = rect.left + (rect.width - tipRect.width) / 2;
+
+  // If clipping bottom, place above
+  if (top + tipRect.height > window.innerHeight - padding) {
+    top = rect.top - tipRect.height - gap;
+  }
+
+  // Horizontal viewport clamp
+  if (left < padding) left = padding;
+  if (left + tipRect.width > window.innerWidth - padding) {
+    left = window.innerWidth - tipRect.width - padding;
+  }
+
+  // Vertical viewport clamp
+  if (top < padding) top = padding;
+
+  globalTooltip.style.top = `${Math.round(top)}px`;
+  globalTooltip.style.left = `${Math.round(left)}px`;
+
+  requestAnimationFrame(() => {
+    globalTooltip.classList.add("visible");
+  });
+}
+
+function hideCustomTooltip() {
+  if (tooltipHoverTimer) {
+    clearTimeout(tooltipHoverTimer);
+    tooltipHoverTimer = null;
+  }
+  currentTooltipTarget = null;
+  const globalTooltip = document.getElementById("appGlobalTooltip");
+  if (globalTooltip) {
+    globalTooltip.classList.remove("visible");
+  }
+}
+
