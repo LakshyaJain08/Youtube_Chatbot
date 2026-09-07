@@ -176,3 +176,29 @@ The application provides three built-in endpoints for monitoring:
 pytest tests/ -v
 ```
 
+---
+
+## Interactive Demo Notebook & System Benchmark
+
+The repository includes a comprehensive 10-module demonstration and quantitative evaluation notebook:
+`01_YouTube_Chatbot_System_Demo.ipynb` (also mirrored in `notebooks/01_YouTube_Chatbot_System_Demo.ipynb`).
+
+### Highlights
+- **Module 1-3**: Multilingual subtitle ingestion, video chaptering, and timestamped chunk splitting.
+- **Module 4-6**: Dense FAISS + Sparse BM25 hybrid indexing, RRF ranking comparison, and grounded generation with clickable timestamp citations.
+- **Module 7**: Live web search fallback demonstration (DuckDuckGo integration).
+- **Module 8**: RAG Triad benchmark evaluating Faithfulness, Answer Relevancy, Context Precision, and Context Recall across 5 query archetypes.
+- **Module 9**: Embedded Matplotlib performance dashboard:
+  - Radar chart profile against production thresholds.
+  - Archetype performance bar chart.
+  - End-to-end component latency breakdown.
+  - Transcript knowledge density timeline map.
+
+### Running with the Registered Virtual Environment Kernel
+1. Open `01_YouTube_Chatbot_System_Demo.ipynb` in VS Code or JupyterLab.
+2. Select the kernel: **Python (YouTube Chatbot Venv)** (`youtube-chatbot-venv`).
+3. Run all cells or execute headlessly:
+```powershell
+.\.venv\Scripts\python.exe run_demo_notebook.py
+```
+
