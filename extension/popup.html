@@ -3,14 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Youtube Chatbot</title>
+  <title>YouTube Chatbot</title>
+  <!-- Google Fonts matching the website design system -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
   <div class="popup-container">
     <header class="popup-header">
-        <div class="brand-logo-wrap">
-          <div class="logo-box">▶</div>
+      <div class="brand">
+        <div class="brand-logo" title="YouTube Chatbot">
+          <div class="logo-core">
+            <svg class="logo-play-icon" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </div>
           <div class="logo-ai-badge">
             <svg class="ai-sparkle-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z" fill="#FFFFFF"/>
@@ -19,10 +28,18 @@
           </div>
         </div>
         <div class="brand-text">
-          <h2>YouTube <span class="accent">AI Copilot</span></h2>
+          <h2>YouTube <span class="brand-sub">Chatbot</span></h2>
           <p id="videoStatus">Checking YouTube Tab...</p>
         </div>
-      <span class="badge" id="apiBadge">Local API</span>
+      </div>
+      <div class="header-actions">
+        <button id="btnExtClose" class="btn-icon-header btn-icon-close" title="Close & Wipe History" aria-label="Close Extension">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
     </header>
 
     <!-- Ingest Section -->
@@ -35,8 +52,8 @@
 
     <!-- Chat Messages -->
     <div class="chat-container" id="extChatContainer">
-      <div class="message assistant">
-        <p>Open any YouTube video tab and click <strong>Ingest & Analyze</strong> to start chatting with timestamp citations!</p>
+      <div class="message assistant default-welcome">
+        <p>Open any YouTube video tab and click <strong>Ingest &amp; Analyze</strong> to start chatting with precision timestamp citations.</p>
       </div>
     </div>
 
@@ -49,8 +66,22 @@
 
     <!-- Input Footer -->
     <form class="chat-input-bar" id="extChatForm">
-      <input type="text" id="extChatInput" placeholder="Ask a question about this video..." disabled />
-      <button type="submit" id="btnExtSend" class="btn-send" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
+      <input type="text" id="extChatInput" placeholder="Ask a question about this video..." disabled autocomplete="off" />
+      <button type="button" id="btnExtWebSearchToggle" class="btn-web-toggle" title="Toggle DuckDuckGo Web Search mode">
+        <svg class="icon-globe" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+        <span class="toggle-text">Web Search</span>
+        <span class="toggle-switch-track"><span class="toggle-switch-thumb"></span></span>
+      </button>
+      <button type="submit" id="btnExtSend" class="btn-send" disabled aria-label="Send">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
     </form>
   </div>
 

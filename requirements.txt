@@ -27,3 +27,8 @@ requests>=2.31.0
 ragas>=0.1.0
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
+httpx>=0.25.0
+
+# System & Monitoring
+psutil>=5.9.0
+

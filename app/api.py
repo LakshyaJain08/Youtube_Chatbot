@@ -5,13 +5,15 @@ Provides REST and Streaming (SSE) endpoints with CORS and static file serving.
 
 import os
 import json
+import time
+import platform
 import asyncio
 from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
+from fastapi.responses import JSONResponse, StreamingResponse, FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
 from src.utils.logger import get_logger
@@ -33,6 +35,34 @@ from app.schemas import (
 logger = get_logger("app.api")
 config = get_config()
 
+# Initialize Telemetry Tracking
+_SERVER_START_TIME = time.time()
+_METRICS = {
+    "total_requests": 0,
+    "total_errors": 0,
+    "endpoint_hits": {},
+}
+
+
+def get_process_metrics():
+    """Calculates process uptime, memory RSS, and CPU utilization."""
+    uptime = round(time.time() - _SERVER_START_TIME, 2)
+    memory_mb = None
+    cpu_pct = None
+    try:
+        import psutil
+        proc = psutil.Process(os.getpid())
+        memory_mb = round(proc.memory_info().rss / (1024 * 1024), 2)
+        cpu_pct = proc.cpu_percent(interval=None)
+    except Exception:
+        pass
+    return {
+        "uptime_seconds": uptime,
+        "memory_rss_mb": memory_mb,
+        "cpu_percent": cpu_pct,
+    }
+
+
 # Initialize FastAPI App
 app = FastAPI(
     title=config.app.name,
@@ -49,6 +79,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def telemetry_middleware(request: Request, call_next):
+    """Tracks request counts and error rates for container monitoring."""
+    _METRICS["total_requests"] += 1
+    path = request.url.path
+    _METRICS["endpoint_hits"][path] = _METRICS["endpoint_hits"].get(path, 0) + 1
+    try:
+        response = await call_next(request)
+        if response.status_code >= 500:
+            _METRICS["total_errors"] += 1
+        return response
+    except Exception:
+        _METRICS["total_errors"] += 1
+        raise
+
+
 # Initialize Pipelines
 ingestion_pipeline = IngestionPipeline()
 rag_pipeline = RAGPipeline()
@@ -61,21 +108,91 @@ STATIC_DIR.mkdir(parents=True, exist_ok=True)
 
 @app.get("/api/health")
 async def health_check():
-    """Returns application health and configuration status."""
+    """Returns application health, uptime, and memory status for Docker and orchestrator probes."""
     has_gemini_key = bool(
         os.getenv("GEMINI_API_KEY")
         or os.getenv("GOOGLE_API_KEY")
         or config.model.gemini_api_key
     )
+    metrics = get_process_metrics()
     return {
         "status": "healthy",
         "app_name": config.app.name,
         "version": config.app.version,
+        "uptime_seconds": metrics["uptime_seconds"],
+        "memory_rss_mb": metrics["memory_rss_mb"],
         "llm_model": config.model.llm_model,
         "embedding_model": config.model.embedding_model,
         "gemini_api_configured": has_gemini_key,
         "cached_retrievers_count": len(rag_pipeline._retriever_cache),
+        "total_requests": _METRICS["total_requests"],
     }
+
+
+@app.get("/api/monitoring")
+async def monitoring_dashboard():
+    """Comprehensive telemetry dashboard for container and system observability."""
+    metrics = get_process_metrics()
+    has_gemini_key = bool(
+        os.getenv("GEMINI_API_KEY")
+        or os.getenv("GOOGLE_API_KEY")
+        or config.model.gemini_api_key
+    )
+    models_dir = Path("models")
+    disk_models_count = len(list(models_dir.glob("*"))) if models_dir.exists() else 0
+    return {
+        "status": "healthy",
+        "service": {
+            "name": config.app.name,
+            "version": config.app.version,
+            "environment": "development" if config.app.debug else "production",
+            "python_version": platform.python_version(),
+            "platform": platform.platform(),
+        },
+        "telemetry": {
+            "uptime_seconds": metrics["uptime_seconds"],
+            "memory_rss_mb": metrics["memory_rss_mb"],
+            "cpu_percent": metrics["cpu_percent"],
+        },
+        "traffic": {
+            "total_requests": _METRICS["total_requests"],
+            "total_errors": _METRICS["total_errors"],
+            "endpoint_breakdown": _METRICS["endpoint_hits"],
+        },
+        "ai_engine": {
+            "llm_model": config.model.llm_model,
+            "fallback_llm_model": config.model.fallback_llm_model,
+            "embedding_model": config.model.embedding_model,
+            "gemini_api_configured": has_gemini_key,
+            "cached_retrievers_in_memory": len(rag_pipeline._retriever_cache),
+            "persisted_video_models_on_disk": disk_models_count,
+        },
+    }
+
+
+@app.get("/metrics", response_class=PlainTextResponse)
+async def prometheus_metrics():
+    """Prometheus-compatible plain-text metrics endpoint for container monitoring."""
+    metrics = get_process_metrics()
+    mem_bytes = int((metrics["memory_rss_mb"] or 0) * 1024 * 1024)
+    lines = [
+        "# HELP app_uptime_seconds Application uptime in seconds",
+        "# TYPE app_uptime_seconds gauge",
+        f"app_uptime_seconds {metrics['uptime_seconds']}",
+        "# HELP app_memory_rss_bytes Resident memory size in bytes",
+        "# TYPE app_memory_rss_bytes gauge",
+        f"app_memory_rss_bytes {mem_bytes}",
+        "# HELP app_requests_total Total HTTP requests processed",
+        "# TYPE app_requests_total counter",
+        f"app_requests_total {_METRICS['total_requests']}",
+        "# HELP app_errors_total Total HTTP 5xx errors",
+        "# TYPE app_errors_total counter",
+        f"app_errors_total {_METRICS['total_errors']}",
+        "# HELP app_cached_retrievers In-memory FAISS cached retrievers",
+        "# TYPE app_cached_retrievers gauge",
+        f"app_cached_retrievers {len(rag_pipeline._retriever_cache)}",
+    ]
+    return "\n".join(lines) + "\n"
 
 
 @app.post("/api/ingest", response_model=IngestResponse)

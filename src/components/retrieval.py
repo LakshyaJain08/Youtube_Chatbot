@@ -62,6 +62,20 @@ class QueryPreprocessor:
 
         return None
 
+    def expand_query_synonyms(self, query: str) -> str:
+        """Expands technical acronyms and common synonyms for improved BM25 & FAISS matching."""
+        expanded = query
+        expansions = [
+            (r"\bml\b", "ML machine learning models"),
+            (r"\bai\b", "AI artificial intelligence"),
+            (r"\bllm\b", "LLM large language models"),
+            (r"\bllms\b", "LLMs large language models"),
+            (r"\brag\b", "RAG retrieval augmented generation"),
+        ]
+        for pattern, repl in expansions:
+            expanded = re.sub(pattern, repl, expanded, flags=re.IGNORECASE)
+        return expanded
+
     def rewrite_query_with_history(self, current_query: str, history: List[Dict[str, str]]) -> str:
         """
         Resolves coreferences in current query using recent conversation turns.
@@ -77,8 +91,9 @@ class QueryPreprocessor:
                 history_text = "\n".join(f"{h.get('role', 'user')}: {h.get('content', '')}" for h in recent_turns)
                 prompt = (
                     f"Given the conversation history:\n{history_text}\n\n"
-                    f"Rewrite the user's follow-up question into a clear, standalone search query that preserves all context:\n"
-                    f"Follow-up question: {current_query}\n"
+                    f"If the following question refers to prior context or uses pronouns, rewrite it into a clear, standalone search query.\n"
+                    f"If it is already an independent question or introduces a new topic, return it unchanged.\n"
+                    f"Question: {current_query}\n"
                     f"Standalone query:"
                 )
                 rewritten = self.llm_client.generate_text(prompt, max_tokens=60, temperature=0.0)
@@ -128,11 +143,12 @@ class StagedHybridRetriever:
         Stage 3: Post-retrieval Contextual Compression
         """
         start_time = time.time()
-        final_k = top_k or self.config.retrieval.top_k_final
-        candidate_k = self.config.retrieval.top_k_candidates
+        final_k = top_k or max(self.config.retrieval.top_k_final, 8)
+        candidate_k = max(self.config.retrieval.top_k_candidates, 20)
 
-        # Step A: Query preprocessing & rewriting
+        # Step A: Query preprocessing, coreference rewriting & synonym expansion
         clean_query = self.preprocessor.rewrite_query_with_history(query, history or [])
+        expanded_query = self.preprocessor.expand_query_synonyms(clean_query)
         time_intent = self.preprocessor.extract_time_intent(query)
 
         # STAGE 1: Metadata Pre-filtering (Image 3 & 4 rule: pre-filter before global ranking)
@@ -158,13 +174,13 @@ class StagedHybridRetriever:
         # STAGE 2: Staged Hybrid Search (Dense + Sparse)
         # 2a. Dense Vector Search (FAISS)
         try:
-            dense_results = self.vector_store.similarity_search(clean_query, k=candidate_k)
+            dense_results = self.vector_store.similarity_search(expanded_query, k=candidate_k)
         except Exception as e:
             logger.warning(f"Dense search encountered error: {e}. Using fallback.")
             dense_results = self.documents[:candidate_k]
 
         # 2b. Sparse Lexical Search (BM25)
-        tokenized_query = clean_query.lower().split()
+        tokenized_query = expanded_query.lower().split()
         bm25_scores = self.bm25_index.get_scores(tokenized_query)
         # Rank documents by BM25 score
         bm25_ranked_indices = sorted(range(len(bm25_scores)), key=lambda i: bm25_scores[i], reverse=True)[:candidate_k]

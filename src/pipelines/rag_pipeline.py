@@ -76,10 +76,10 @@ class RAGPipeline:
         # -------------------------------------------------------------
         if force_web_search:
             if not enable_web_search:
-                # User clicked to search web, but toggle is OFF
                 off_msg = (
-                    "**Web Search toggle is currently OFF**.\n\n"
-                    "Please turn **ON** the Web Search toggle (located to the left of the Send button) and try again to search DuckDuckGo."
+                    "This query is not mentioned in the video.\n\n"
+                    "**Web Search is currently OFF**. Toggle Web Search **ON** if you would like an answer retrieved from the web.\n\n"
+                    f"[SEARCH_WEB_OPTION:{question}]"
                 )
                 total_latency_ms = round((time.time() - start_time) * 1000, 2)
                 return {
@@ -160,14 +160,34 @@ class RAGPipeline:
         citations = gen_result["citations"]
         is_grounded = gen_result["is_grounded"]
 
-        # If answer is NOT found in video transcript, present the user an option to search the web
+        web_search_used = False
+
+        # If answer is NOT found in video transcript:
         if not is_grounded:
-            web_option_card = (
-                f"\n\n---\n"
-                f"**Information not found in this video.** Would you like me to search the web for an answer?\n\n"
-                f"[SEARCH_WEB_OPTION:{question}]"
-            )
-            answer_text += web_option_card
+            if enable_web_search:
+                logger.info(f"Query '{question}' is not mentioned in video transcript. Web Search is ON -> executing DuckDuckGo search.")
+                web_results = self.web_search.search(question)
+                web_prompt = self.augmenter.build_web_search_prompt(
+                    question=question,
+                    web_results=web_results,
+                    history=history
+                )
+                raw_web_answer = self.generator.generate_text(web_prompt)
+                answer_text = (
+                    f"This query is not mentioned in the video.\n\n"
+                    f"**DuckDuckGo Web Search Result (Web Search is ON):**\n\n"
+                    f"{raw_web_answer}\n\n"
+                    f"> *Note: This answer was retrieved from external web search sources because it was not covered in the video transcript.*"
+                )
+                web_search_used = True
+                is_grounded = True
+            else:
+                answer_text = (
+                    f"This query is not mentioned in the video.\n\n"
+                    f"**Web Search is currently OFF**. Toggle Web Search **ON** if you would like an answer retrieved from the web.\n\n"
+                    f"[SEARCH_WEB_OPTION:{question}]"
+                )
+                web_search_used = False
 
         total_latency_ms = round((time.time() - start_time) * 1000, 2)
 
@@ -193,19 +213,19 @@ class RAGPipeline:
             for i, d in enumerate(retrieved_docs)
         ]
 
-        logger.info(f"Query completed in {total_latency_ms}ms (Quality Score: {metrics['rag_quality_score']}, is_grounded: {is_grounded})")
+        logger.info(f"Query completed in {total_latency_ms}ms (Quality Score: {metrics['rag_quality_score']}, is_grounded: {is_grounded}, web_search_used: {web_search_used})")
 
         return {
             "video_id": video_id,
             "question": question,
             "answer": answer_text,
             "citations": citations,
-            "confidence_score": gen_result["confidence_score"],
+            "confidence_score": gen_result["confidence_score"] if not web_search_used else 0.92,
             "is_grounded": is_grounded,
             "retrieved_chunks": formatted_chunks,
             "latency_ms": total_latency_ms,
             "evaluation_metrics": metrics,
-            "web_search_used": False,
+            "web_search_used": web_search_used,
         }
 
     async def query_stream(

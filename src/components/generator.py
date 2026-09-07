@@ -82,35 +82,35 @@ class ResponseGenerator:
     def apply_guardrails(self, answer_text: str, context_chunks: List[Any]) -> Dict[str, Any]:
         """
         Guardrail check:
-        1. Checks if response admits unknown or not found in transcript.
-        2. Calculates grounding confidence score based on citation density and keywords.
+        1. Checks if response contains valid timestamp citations.
+        2. If citations exist, the answer is grounded in video segments.
+        3. Only flags not_found if no citations exist and negative indicator phrases are present.
         """
         lower_ans = answer_text.lower()
-        is_grounded = True
-        confidence_score = 0.95
+        citations = self.extract_citations(answer_text)
 
         not_found_indicators = [
             "not discussed",
             "not mentioned",
             "cannot be determined",
             "not in the transcript",
+            "no information about this",
+            "not present in the video",
             "does not mention",
             "no mention",
-            "i don't know",
-            "not present in the video",
         ]
 
-        for indicator in not_found_indicators:
-            if indicator in lower_ans:
-                is_grounded = False
-                confidence_score = 0.4
-                break
-
-        citations = self.extract_citations(answer_text)
-        if not citations and is_grounded:
-            confidence_score = 0.85
-        elif citations and is_grounded:
+        if citations:
+            is_grounded = True
             confidence_score = min(0.99, 0.90 + len(citations) * 0.02)
+        else:
+            is_grounded = True
+            confidence_score = 0.85
+            for indicator in not_found_indicators:
+                if indicator in lower_ans:
+                    is_grounded = False
+                    confidence_score = 0.40
+                    break
 
         return {
             "is_grounded": is_grounded,
