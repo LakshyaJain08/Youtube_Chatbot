@@ -319,6 +319,13 @@ if STATIC_DIR.exists():
             return FileResponse(str(index_file))
         return {"message": "YouTube Chatbot API is running. Frontend static files loading..."}
 
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def serve_favicon():
+        ico_file = STATIC_DIR / "favicon.ico"
+        if ico_file.exists():
+            return FileResponse(str(ico_file), media_type="image/x-icon")
+        raise HTTPException(status_code=404, detail="Favicon not found")
+
     @app.get("/style.css")
     async def serve_root_style():
         css_file = STATIC_DIR / "style.css"
@@ -332,3 +339,4 @@ if STATIC_DIR.exists():
         if js_file.exists():
             return FileResponse(str(js_file), media_type="application/javascript")
         raise HTTPException(status_code=404, detail="File not found")
+
